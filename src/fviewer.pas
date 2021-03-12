@@ -1370,6 +1370,7 @@ begin
         FWlxModule:= WlxModule;
         WlxModule.ResizeWindow(GetListerRect);
         actPrint.Enabled:= WlxModule.CanPrint;
+        actPrintSetup.Enabled:= WlxModule.CanPrint;
         // Set focus to plugin window
         if not bQuickView then WlxModule.SetFocus;
         Exit(True);
