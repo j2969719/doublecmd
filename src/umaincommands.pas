@@ -1896,7 +1896,7 @@ begin
     if Assigned(ActiveFile) and
        (ActiveFile.IsDirectory or ActiveFile.IsLinkToDirectory) then
     begin
-      ActiveFrame.ExecuteCommand('cm_Open', []);
+      ActiveFrame.OpenActiveFile;
       Exit;
     end;
 
