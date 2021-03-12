@@ -44,6 +44,8 @@ object frmElevation: TfrmElevation
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
+    AutoSize = True
+    Constraints.MinWidth = 94
     Left = 294
     Height = 38
     Top = 92
@@ -60,6 +62,8 @@ object frmElevation: TfrmElevation
     AnchorSideTop.Control = chkElevateAll
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = btnCancel
+    AutoSize = True
+    Constraints.MinWidth = 94
     Left = 188
     Height = 38
     Top = 92

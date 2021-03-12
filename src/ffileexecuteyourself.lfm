@@ -33,6 +33,8 @@ object frmFileExecuteYourSelf: TfrmFileExecuteYourSelf
     AnchorSideLeft.Side = asrCenter
     AnchorSideTop.Control = lblFromPathValue
     AnchorSideTop.Side = asrBottom
+    AutoSize = True
+    Constraints.MinWidth = 75
     Left = 123
     Height = 30
     Top = 45
