@@ -250,8 +250,14 @@ begin
       New(SambaHandle);
       SambaHandle^.Path:= IncludeTrailingPathDelimiter(NetworkPath);
       SambaHandle^.Handle:= Handle;
-      Result:= THandle(SambaHandle);
-      FsFindNext(Result, FindData);
+      if not FsFindNext(THandle(SambaHandle), FindData) then
+        begin
+          smbc_closedir(SambaHandle^.Handle);
+          Dispose(SambaHandle);
+          Result:= wfxInvalidHandle;
+        end
+      else
+        Result:= THandle(SambaHandle);
     end;
 end;
 
