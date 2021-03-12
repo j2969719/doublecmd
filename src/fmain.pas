@@ -2791,6 +2791,7 @@ begin
   Screen.Cursors[crArrowCopy] := LoadCursorFromLazarusResource('ArrowCopy');
   Screen.Cursors[crArrowMove] := LoadCursorFromLazarusResource('ArrowMove');
   Screen.Cursors[crArrowLink] := LoadCursorFromLazarusResource('ArrowLink');
+  Screen.Cursors[crNoDrop] := LoadCursorFromLazarusResource('ArrowUnav');
 end;
 
 procedure TfrmMain.AfterConstruction;
