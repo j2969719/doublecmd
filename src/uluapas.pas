@@ -39,6 +39,11 @@ uses
   Forms, Dialogs, Clipbrd, LazUTF8, LCLVersion, uLng, DCOSUtils,
   DCConvertEncoding, fMain, uFormCommands, uOSUtils, uGlobs, uLog,
   uClipboard, uShowMsg, uLuaStd, uFindEx, uConvEncoding, uFileProcs,
+
+  uShellExecute, Process, UTF8Process, uRegExprU, uFileSourceUtil,
+  uFile, uFileFunctions, uFileSource, uFileSystemFileSource,
+  IniFiles,
+
   uFilePanelSelect;
 
 procedure luaPushSearchRec(L : Plua_State; Rec: PSearchRecEx);
@@ -290,13 +295,16 @@ end;
 
 function luaMessageBox(L : Plua_State) : Integer; cdecl;
 var
-  flags: Integer;
-  text, caption: PAnsiChar;
+  flags: Integer = 0;
+  text: String = '';
+  caption: String = '';
 begin
   Result:= 1;
   text:= luaL_checkstring(L, 1);
-  caption:= luaL_checkstring(L, 2);
-  flags:= Integer(lua_tointeger(L, 3));
+  if lua_isstring(L, 2) then
+    caption:= luaL_checkstring(L, 2);
+  if lua_isnumber(L, 3) then
+    flags:= Integer(lua_tointeger(L, 3));
   flags:= ShowMessageBox(text, caption, flags);
   lua_pushinteger(L, flags);
 end;
@@ -410,6 +418,415 @@ begin
     frmMain.SetActiveFrame(TFilePanelSelect(lua_tointeger(L, 1)));
 end;
 
+
+function luaFixExeExt(L : Plua_State) : Integer; cdecl;
+var
+  S: String;
+begin
+  Result:= 1;
+  S:= lua_tostring(L, 1);
+  lua_pushstring(L, FixExeExt(S));
+end;
+
+function luaReplaceEnvVars(L : Plua_State) : Integer; cdecl;
+var
+  S: String;
+begin
+  Result:= 1;
+  S:= lua_tostring(L, 1);
+  lua_pushstring(L, ReplaceEnvVars(S));
+end;
+
+function luaGetTempName(L : Plua_State) : Integer; cdecl;
+begin
+  Result:= 1;
+  lua_pushstring(L, GetTempName(GetTempFolderDeletableAtTheEnd));
+end;
+
+function luaGetCmdOutputFile(L : Plua_State) : Integer; cdecl;
+var
+  sTmpFile, sCmd, sShellCmdLine: String;
+  Process: TProcessUTF8;
+begin
+  Result:= 1;
+  sCmd:= lua_tostring(L, 1);
+  sTmpFile:= GetTempName(GetTempFolderDeletableAtTheEnd) + '.tmp';
+  sShellCmdLine:= sCmd + ' > ' + QuoteStr(sTmpFile);
+  Process:= TProcessUTF8.Create(nil);
+  try
+    Process.CommandLine := FormatShell(sShellCmdLine);
+    Process.Options := [poWaitOnExit];
+    Process.ShowWindow := swoHide;
+    Process.Execute;
+  finally
+    Process.Free;
+  end;
+  lua_pushstring(L, sTmpFile);
+end;
+
+function luaReadFileToString(L : Plua_State) : Integer; cdecl;
+var
+  S: String;
+begin
+  Result:= 1;
+  S:= lua_tostring(L, 1);
+  lua_pushstring(L, PChar(mbReadFileToString(S)));
+end;
+
+function luaProcessExtCommandFork(L : Plua_State) : Integer; cdecl;
+var
+  sCmd: string;
+  sParams: string = '';
+  sWorkPath: string = '';
+  bTerm: boolean = False;
+  bKeepTerminalOpen: boolean = False;
+begin
+  Result:= 1;
+  sCmd:= lua_tostring(L, 1);
+  if lua_isstring(L, 2) then
+    sParams:= lua_tostring(L, 2);
+  if lua_isstring(L, 3) then
+    sWorkPath:= lua_tostring(L, 3);
+  if lua_isboolean(L, 4) then
+    bTerm:= lua_toboolean(L, 4);
+  if lua_isboolean(L, 5) then
+    bKeepTerminalOpen:= lua_toboolean(L, 5);
+  lua_pushboolean(L, ProcessExtCommandFork(sCmd, sParams, sWorkPath, nil, bTerm, bKeepTerminalOpen));
+end;
+
+function luaDetectEncoding(L : Plua_State) : Integer; cdecl;
+var
+  S: String;
+begin
+  Result:= 1;
+  S:= lua_tostring(L, 1);
+  lua_pushstring(L, DetectEncoding(S));
+end;
+
+function luaCopyFile(L : Plua_State) : Integer; cdecl;
+var
+  sSrc, sDst, sDstDir: String;
+  bAppend: Boolean = False;
+begin
+  Result:= 1;
+  sSrc:= lua_tostring(L, 1);
+  if mbDirectoryExists(sSrc) then
+  begin
+     lua_pushboolean(L, False);
+     Exit;
+  end;
+  sDst:= lua_tostring(L, 2);
+  sDstDir:= ExtractFileDir(sDst);
+  mbForceDirectory(sDstDir);
+  if lua_isboolean(L, 3) then
+    bAppend:= lua_toboolean(L, 3);
+  lua_pushboolean(L, CopyFile(sSrc, sDst, bAppend));
+end;
+
+function luaDelTree(L : Plua_State) : Integer; cdecl;
+var
+  sDir: String;
+begin
+  Result:= 1;
+  sDir:= lua_tostring(L, 1);
+  if not mbDirectoryExists(sDir) then
+  begin
+     lua_pushboolean(L, False);
+     Exit;
+  end;
+  DelTree(sDir);
+  lua_pushboolean(L, True);
+end;
+
+function luaRegExpr(L : Plua_State) : Integer; cdecl;
+var
+  sEx, sInput: String;
+  re: TRegExprU;
+  pPos, pLen: IntPtr;
+begin
+  Result:= 0;
+  sEx:= lua_tostring(L, 1);
+  sInput:= lua_tostring(L, 2);
+  re:= TRegExprU.Create;
+  re.Expression:= sEx;
+  re.SetInputString(PChar(sInput), Length(sInput));
+  if re.Exec(1) then
+  begin
+    repeat
+      pLen:= re.MatchLen[0];
+      pPos:= re.MatchPos[0];
+      Inc(Result);
+      lua_pushstring(L, PAnsiChar(Copy(sInput, pPos, pLen)));
+    until not re.Exec(pPos + pLen);
+  end
+  else
+  begin
+    Result:= 1;
+    lua_pushnil(L);
+  end;
+  FreeAndNil(re);
+end;
+
+function luaReplaceDCVarParams(L : Plua_State) : Integer; cdecl;
+var
+  S: String;
+begin
+  Result:= 1;
+  S:= ReplaceVarParams(lua_tostring(L, 1));
+  lua_pushstring(L, S);
+end;
+
+function luaGoToFile(L : Plua_State) : Integer; cdecl;
+var
+  sFilePath: String;
+  bActive: Boolean = True;
+begin
+  Result:= 0;
+  sFilePath:= lua_tostring(L, 1);
+  if lua_isboolean(L, 2) then
+    bActive:= lua_toboolean(L, 2);
+  if bActive then
+  begin
+    SetFileSystemPath(frmMain.ActiveFrame, ExtractFilePath(sFilePath));
+    frmMain.ActiveFrame.SetActiveFile(ExtractFileName(sFilePath));
+  end
+  else
+  begin
+    SetFileSystemPath(frmMain.NotActiveFrame, ExtractFilePath(sFilePath));
+    frmMain.NotActiveFrame.SetActiveFile(ExtractFileName(sFilePath));
+  end;
+end;
+
+function luaFormatFileFunctions(L : Plua_State) : Integer; cdecl;
+var
+  sFilePath, sFunc: String;
+  aFile: TFile;
+  aFileSource: IFileSource;
+begin
+  Result:= 1;
+  sFilePath:= lua_tostring(L, 1);
+  sFunc:= lua_tostring(L, 2);
+  aFile := TFileSystemFileSource.CreateFileFromFile(sFilePath);
+  aFileSource := TFileSystemFileSource.GetFileSource;
+  lua_pushstring(L, FormatFileFunctions(sFunc, aFile, aFileSource));
+  FreeAndNil(aFile);
+end;
+
+function luaINIOpen(L : Plua_State) : Integer; cdecl;
+var
+  pIni: TIniFile;
+begin
+  Result:= 1;
+  try
+    pIni:= TIniFile.Create(lua_tostring(L, 1));
+    lua_pushlightuserdata(L, Pointer(pIni));
+  except
+    lua_pushnil(L);
+  end;
+end;
+
+function luaINIFree(L : Plua_State) : Integer; cdecl;
+var
+  pIni: TIniFile;
+begin
+  Result:= 0;
+  pIni:= TIniFile(lua_touserdata(L, 1));
+  if Assigned(pIni) then
+    pIni.Free;
+end;
+
+function luaINIReadString(L : Plua_State) : Integer; cdecl;
+var
+  pIni: TIniFile;
+  sSection, sIdent: String;
+  sDefault: String = '';
+begin
+  Result:= 1;
+  pIni:= TIniFile(lua_touserdata(L, 1));
+  if Assigned(pIni) then
+  begin
+    sSection:= lua_tostring(L, 2);
+    sIdent:=  lua_tostring(L, 3);
+    if lua_isstring(L, 4) then
+      sDefault:= lua_tostring(L, 4);
+    lua_pushstring(L, pIni.ReadString(sSection, sIdent, sDefault));
+  end
+  else
+    lua_pushnil(L);
+end;
+
+function luaINIReadSection(L : Plua_State) : Integer; cdecl;
+var
+  pIni: TIniFile;
+  sSection: String;
+  sStrings: TStrings;
+begin
+  Result:= 1;
+  pIni:= TIniFile(lua_touserdata(L, 1));
+  sStrings:= TStringList.Create;
+  if Assigned(pIni) then
+  begin
+    sSection:= lua_tostring(L, 2);
+    pIni.ReadSection(sSection, sStrings);
+    lua_pushstring(L, sStrings.CommaText);
+  end
+  else
+    lua_pushnil(L);
+end;
+
+function luaINIWriteString(L : Plua_State) : Integer; cdecl;
+var
+  pIni: TIniFile;
+  sSection, sIdent, sValue: String;
+begin
+  Result:= 0;
+  pIni:= TIniFile(lua_touserdata(L, 1));
+  if Assigned(pIni) and (lua_gettop(L) = 4) then
+  begin
+    sSection:= lua_tostring(L, 2);
+    sIdent:= lua_tostring(L, 3);
+    sValue:= lua_tostring(L, 4);
+    pIni.WriteString(sSection, sIdent, sValue);
+  end;
+end;
+
+function luaINIUpdateFile(L : Plua_State) : Integer; cdecl;
+var
+  pIni: TIniFile;
+begin
+  Result:= 0;
+  pIni:= TIniFile(lua_touserdata(L, 1));
+  if Assigned(pIni) then
+    pIni.UpdateFile;
+end;
+
+function luaINIDeleteKey(L : Plua_State) : Integer; cdecl;
+var
+  pIni: TIniFile;
+  sSection, sIdent: String;
+begin
+  Result:= 0;
+  pIni:= TIniFile(lua_touserdata(L, 1));
+  sSection:= lua_tostring(L, 2);
+  sIdent:= lua_tostring(L, 3);
+  if Assigned(pIni) then
+    pIni.DeleteKey(sSection, sIdent);
+end;
+
+function luaINIEraseSection(L : Plua_State) : Integer; cdecl;
+var
+  pIni: TIniFile;
+begin
+  Result:= 0;
+  pIni:= TIniFile(lua_touserdata(L, 1));
+  if Assigned(pIni) then
+    pIni.EraseSection(lua_tostring(L, 2));
+end;
+
+function luaSplit(L : Plua_State) : Integer; cdecl;
+var
+  sString, sDelimiter: String;
+  aResult: TStringArray;
+begin
+  Result:= 0;
+  sString:= lua_tostring(L, 1);
+  sDelimiter:= lua_tostring(L, 2);
+  aResult:= sString.Split(sDelimiter);
+  for sString in aResult do
+  begin
+    Inc(Result);
+    lua_pushstring(L, sString);
+  end;
+  if (Result = 0) then
+  begin
+    Result:= 1;
+    lua_pushnil(L);
+  end;
+end;
+
+function luaOR(L : Plua_State) : Integer; cdecl;
+var
+  iRes, i, iArgs: Integer;
+begin
+  Result:= 1;
+  iArgs:= lua_gettop(L);
+  if lua_isnumber(L, 1) and (iArgs >= 2) then
+  begin
+    iRes:= Integer(lua_tointeger(L, 1));
+    for i:= 2 to iArgs do
+      if lua_isnumber(L, i) then
+        iRes:= iRes or Integer(lua_tointeger(L, i));
+    lua_pushinteger(L, iRes);
+  end
+  else
+    lua_pushnil(L);
+end;
+
+function luaAND(L : Plua_State) : Integer; cdecl;
+var
+  iRes, i, iArgs: Integer;
+begin
+  Result:= 1;
+  iArgs:= lua_gettop(L);
+  if lua_isnumber(L, 1) and (iArgs >= 2) then
+  begin
+    iRes:= Integer(lua_tointeger(L, 1));
+    for i:= 2 to iArgs do
+      if lua_isnumber(L, i) then
+        iRes:= iRes and Integer(lua_tointeger(L, i));
+    lua_pushinteger(L, iRes);
+  end
+  else
+    lua_pushnil(L);
+end;
+
+function luaNOT(L : Plua_State) : Integer; cdecl;
+begin
+  Result:= 1;
+  if lua_isnumber(L, 1) then
+     lua_pushinteger(L, not Integer(lua_tointeger(L, 1)))
+  else if lua_isboolean(L, 1) then
+     lua_pushboolean(L, not lua_toboolean(L, 1))
+  else if lua_isnil(L, 1) then
+     lua_pushboolean(L, True)
+  else
+     lua_pushnil(L);
+end;
+
+function luaLeftShift(L : Plua_State) : Integer; cdecl;
+var
+  iRes, iL, iR: Integer;
+begin
+  Result:= 1;
+  if (lua_gettop(L) = 2) and (lua_isnumber(L, 1) and lua_isnumber(L, 2)) then
+  begin
+    iL:= Integer(lua_tointeger(L, 1));
+    iR:= Integer(lua_tointeger(L, 2));
+    iRes:= iL << iR;
+    lua_pushinteger(L, iRes);
+  end
+  else
+    lua_pushnil(L);
+end;
+
+function luaRightShift(L : Plua_State) : Integer; cdecl;
+var
+  iRes, iL, iR: Integer;
+begin
+  Result:= 1;
+  if (lua_gettop(L) = 2) and (lua_isnumber(L, 1) and lua_isnumber(L, 2)) then
+  begin
+    iL:= Integer(lua_tointeger(L, 1));
+    iR:= Integer(lua_tointeger(L, 2));
+    iRes:= iL >> iR;
+    lua_pushinteger(L, iRes);
+  end
+  else
+    lua_pushnil(L);
+end;
+
+
+
 procedure luaP_register(L : Plua_State; n : PChar; f : lua_CFunction);
 begin
   lua_pushcfunction(L, f);
@@ -435,6 +852,9 @@ begin
     luaP_register(L, 'DirectoryExists', @luaDirectoryExists);
     luaP_register(L, 'CreateDirectory', @luaCreateDirectory);
 
+    luaP_register(L, 'CopyFile', @luaCopyFile);
+    luaP_register(L, 'DelTree', @luaDelTree);
+
     luaP_register(L, 'CreateHardLink', @luaCreateHardLink);
     luaP_register(L, 'CreateSymbolicLink', @luaCreateSymbolicLink);
     luaP_register(L, 'ReadSymbolicLink', @luaReadSymbolicLink);
@@ -455,6 +875,11 @@ begin
     luaP_register(L, 'UpperCase', @luaUpperCase);
     luaP_register(L, 'LowerCase', @luaLowerCase);
     luaP_register(L, 'ConvertEncoding', @luaConvertEncoding);
+
+    luaP_register(L, 'Split', @luaSplit);
+    luaP_register(L, 'RegExpr', @luaRegExpr);
+    luaP_register(L, 'DetectEncoding', @luaDetectEncoding);
+
   lua_setglobal(L, 'LazUtf8');
 
   lua_newtable(L);
@@ -474,6 +899,33 @@ begin
     luaP_register(L, 'LogWrite', @luaLogWrite);
     luaP_register(L, 'CurrentPanel', @luaCurrentPanel);
     luaP_register(L, 'ExecuteCommand', @luaExecuteCommand);
+
+
+    luaP_register(L, 'GoToFile', @luaGoToFile);
+    luaP_register(L, 'FixExeExt', @luaFixExeExt);
+    luaP_register(L, 'ReplaceEnvVars', @luaReplaceEnvVars);
+    luaP_register(L, 'ReplaceDCVarParams', @luaReplaceDCVarParams);
+    luaP_register(L, 'GetTempName', @luaGetTempName);
+    luaP_register(L, 'GetCmdOutputFile', @luaGetCmdOutputFile);
+    luaP_register(L, 'ReadFileToString', @luaReadFileToString);
+    luaP_register(L, 'ProcessExtCommandFork', @luaProcessExtCommandFork);
+    luaP_register(L, 'FormatFileFunctions', @luaFormatFileFunctions);
+
+    luaP_register(L, 'INIOpen', @luaINIOpen);
+    luaP_register(L, 'INIFree', @luaINIFree);
+    luaP_register(L, 'INIReadString', @luaINIReadString);
+    luaP_register(L, 'INIReadSection', @luaINIReadSection);
+    luaP_register(L, 'INIWriteString', @luaINIWriteString);
+    luaP_register(L, 'INIUpdateFile', @luaINIUpdateFile);
+    luaP_register(L, 'INIEraseSection', @luaINIEraseSection);
+    luaP_register(L, 'INIDeleteKey', @luaINIDeleteKey);
+
+    luaP_register(L, 'OR', @luaOR);
+    luaP_register(L, 'AND', @luaAND);
+    luaP_register(L, 'NOT', @luaNOT);
+    luaP_register(L, 'LeftShift', @luaLeftShift);
+    luaP_register(L, 'RightShift', @luaRightShift);
+
   lua_setglobal(L, 'DC');
 
   ReplaceLibrary(L);

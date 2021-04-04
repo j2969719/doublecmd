@@ -283,6 +283,9 @@ uses
 
   //DC
   DCClassesUtf8, DCStrUtils,
+
+  LConvEncoding, uConvEncoding, uLog,
+
   uComponentsSignature, uGlobs, uGlobsPaths, uDebug, uDCUtils, uOSUtils,
   DCBasicTypes, DCOSUtils, DCDateTimeUtils, DCConvertEncoding, uLuaPas;
 
@@ -952,6 +955,7 @@ begin
   Result := luaL_dofile(L, PChar(AName));
   if Result <> 0 then begin
     DCDebug('TLuaWdx.DoScript: ', lua_tostring(L, -1));
+    logWrite(lua_tostring(L, -1), lmtError, True, False);
   end;
 end;
 
@@ -1049,7 +1053,7 @@ begin
   Index := 0;
   repeat
     Rez := WdxLuaContentGetSupportedField(Index, xFieldName, xUnits);
-    DCDebug('WDX:CallGetSupFields:' + IntToStr(Rez));
+    //DCDebug('WDX:CallGetSupFields:' + IntToStr(Rez));
     if Rez <> ft_nomorefields then
     begin
       AddField(xFieldName, xUnits, Rez);
@@ -1122,6 +1126,8 @@ end;
 
 function TLuaWdx.CallContentGetValueV(FileName: String; FieldIndex,
   UnitIndex: Integer; flags: Integer): Variant;
+var
+  Value, Encoding: String;
 begin
   EnterCriticalSection(FMutex);
   try
@@ -1145,7 +1151,11 @@ begin
         ft_string,
         ft_fulltext,
         ft_multiplechoice:
-          Result := lua_tostring(L, -1);
+          begin
+            Value := lua_tostring(L, -1);
+            Encoding:= DetectEncoding(Value);
+            Result := ConvertEncoding(Value, Encoding, EncodingUTF8);
+          end;
         ft_numeric_32:
           Result := Int32(lua_tointeger(L, -1));
         ft_numeric_64:
@@ -1166,6 +1176,8 @@ begin
 end;
 
 function TLuaWdx.CallContentGetValue(FileName: String; FieldIndex, UnitIndex: Integer; flags: Integer): String;
+var
+  Value, Encoding: String;
 begin
   EnterCriticalSection(FMutex);
   try
@@ -1189,7 +1201,11 @@ begin
         ft_string,
         ft_fulltext,
         ft_multiplechoice:
-          Result := lua_tostring(L, -1);
+          begin
+            Value := lua_tostring(L, -1);
+            Encoding:= DetectEncoding(Value);
+            Result := ConvertEncoding(Value, Encoding, EncodingUTF8);
+          end;
         ft_numeric_32:
           Result := IntToStr(Int32(lua_tointeger(L, -1)));
         ft_numeric_64:
