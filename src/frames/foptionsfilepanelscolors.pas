@@ -79,15 +79,6 @@ type
     lblInactivePanelBrightness: TLabel;
     spPanelSplitter: TSplitter;
     tbInactivePanelBrightness: TTrackBar;
-    dbFreeSpaceIndicator: TDividerBevel;
-    cbbUseGradientInd: TCheckBox;
-    pbxFakeDrive: TPaintBox;
-    lblIndColor: TLabel;
-    cbIndColor: TColorBox;
-    btnIndColor: TButton;
-    lblIndBackColor: TLabel;
-    cbIndBackColor: TColorBox;
-    btnIndBackColor: TButton;
     pnlPreviewCont: TPanel;
     lblPreview: TLabel;
     pnlLeftPreview: TPanel;
@@ -108,12 +99,7 @@ type
     procedure cbbUseInactiveSelColorChange(Sender: TObject);
     procedure cbUseCursorBorderChange(Sender: TObject);
     procedure tbInactivePanelBrightnessChange(Sender: TObject);
-    procedure cbbUseGradientIndChange(Sender: TObject);
-    procedure cbIndColorChange(Sender: TObject);
-    procedure btnIndColorClick(Sender: TObject);
-    procedure btnIndBackColorClick(Sender: TObject);
     procedure RefreshPreviewPanel;
-    procedure pbxFakeDrivePaint(Sender: TObject);
     procedure pnlLeftPreviewEnter(Sender: TObject);
     procedure pnlRightPreviewEnter(Sender: TObject);
     function JustForConfigDim(AColor: TColor): TColor;
@@ -183,9 +169,6 @@ begin
   cbUseCursorBorder.Checked := gUseCursorBorder;
   SetColorInColorBox(cbCursorBorderColor, gCursorBorderColor);
   tbInactivePanelBrightness.Position := gInactivePanelBrightness;
-  SetColorInColorBox(cbIndColor, gIndForeColor);
-  SetColorInColorBox(cbIndBackColor, gIndBackColor);
-  cbbUseGradientInd.Checked := gIndUseGradient;
   cbbUseFrameCursorChange(cbbUseFrameCursor);
   cbbUseInactiveSelColorChange(cbbUseInactiveSelColor);
 
@@ -228,9 +211,6 @@ begin
   gUseCursorBorder := cbUseCursorBorder.Checked;
   gCursorBorderColor := cbCursorBorderColor.Selected;
   gInactivePanelBrightness := tbInactivePanelBrightness.Position;
-  gIndUseGradient := cbbUseGradientInd.Checked;
-  gIndForeColor := cbIndColor.Selected;
-  gIndBackColor := cbIndBackColor.Selected;
   Result := [];
 end;
 
@@ -268,9 +248,6 @@ begin
   cbUseCursorBorder.Checked := False;
   SetColorInColorBox(cbCursorBorderColor, clHighlight);
   tbInactivePanelBrightness.Position := 100;
-  SetColorInColorBox(cbIndColor, clBlack);
-  SetColorInColorBox(cbIndBackColor, clWhite);
-  cbbUseGradientInd.Checked := True;
   cbbUseFrameCursorChange(cbbUseFrameCursor);
 end;
 
@@ -425,46 +402,6 @@ begin
   end;
 end;
 
-{ TfrmOptionsFilePanelsColors.cbbUseGradientIndChange }
-procedure TfrmOptionsFilePanelsColors.cbbUseGradientIndChange(Sender: TObject);
-begin
-  lblIndColor.Enabled := not (cbbUseGradientInd.Checked);
-  lblIndBackColor.Enabled := not (cbbUseGradientInd.Checked);
-  cbIndColor.Enabled := not (cbbUseGradientInd.Checked);
-  cbIndBackColor.Enabled := not (cbbUseGradientInd.Checked);
-  btnIndColor.Enabled := not (cbbUseGradientInd.Checked);
-  btnIndBackColor.Enabled := not (cbbUseGradientInd.Checked);
-  pbxFakeDrive.Repaint;
-end;
-
-{ TfrmOptionsFilePanelsColors.cbIndColorChange }
-procedure TfrmOptionsFilePanelsColors.cbIndColorChange(Sender: TObject);
-begin
-  pbxFakeDrive.Repaint;
-end;
-
-{ TfrmOptionsFilePanelsColors.btnIndColorClick }
-procedure TfrmOptionsFilePanelsColors.btnIndColorClick(Sender: TObject);
-begin
-  optColorDialog.Color := cbIndColor.Selected;
-  if optColorDialog.Execute then
-  begin
-    SetColorInColorBox(cbIndColor, optColorDialog.Color);
-    pbxFakeDrive.Repaint;
-  end;
-end;
-
-{ TfrmOptionsFilePanelsColors.btnIndBackColorClick }
-procedure TfrmOptionsFilePanelsColors.btnIndBackColorClick(Sender: TObject);
-begin
-  optColorDialog.Color := cbIndBackColor.Selected;
-  if optColorDialog.Execute then
-  begin
-    SetColorInColorBox(cbIndBackColor, optColorDialog.Color);
-    pbxFakeDrive.Repaint;
-  end;
-end;
-
 { TfrmOptionsFilePanelsColors.RefreshPreviewPanel }
 procedure TfrmOptionsFilePanelsColors.RefreshPreviewPanel;
 const
@@ -507,12 +444,6 @@ begin
 
   PreviewLeftPanel.UpdateColumnsView;
   PreviewRightPanel.UpdateColumnsView;
-end;
-
-{ TfrmOptionsFilePanelsColors.pbxFakeDrivePaint }
-procedure TfrmOptionsFilePanelsColors.pbxFakeDrivePaint(Sender: TObject);
-begin
-  frmMain.PaintDriveFreeBar(pbxFakeDrive, cbbUseGradientInd.Checked, cbIndColor.Selected, cbIndBackColor.Selected);
 end;
 
 { TfrmOptionsFilePanelsColors.pnlLeftPreviewEnter }

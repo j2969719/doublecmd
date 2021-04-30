@@ -181,6 +181,7 @@ uses
   fOptionsToolsEditor,
   fOptionsToolsDiffer,
   fOptionsEditorColors,
+  fOptionsColorsGroup,
   fOptionsToolTips,
   fOptionsFileAssoc,
   fOptionsFileAssocExtra,
@@ -369,9 +370,10 @@ begin
   Tools.Add(TfrmOptionsDiffer);
   Tools.Add(TfrmOptionsTerminal);
   Main.Add(TfrmOptionsFonts);
-  Colors := Main.Add(TOptionsColorsGroup);
+  Colors := Main.Add(TfrmOptionsColorsGroup);
   Colors.Add(TfrmOptionsFilePanelsColors);
   Colors.Add(TfrmOptionsFileTypesColors);
+  Colors.Add(TfrmOptionsTreeViewMenuColor);
   Keyboard := Main.Add(TfrmOptionsKeyboard);
   Keyboard.Add(TfrmOptionsHotkeys);
   Mouse := Main.Add(TfrmOptionsMouse);
@@ -390,7 +392,6 @@ begin
   Layout := Main.Add(TfrmOptionsLayout);
   Layout.Add(TfrmOptionsDrivesListButton);
   Layout.Add(TfrmOptionsTreeViewMenu);
-  Layout.Add(TfrmOptionsTreeViewMenuColor);
   ToolbarConfig := Main.Add(TfrmOptionsToolbar);
   ToolbarConfig.Add(TfrmOptionsToolbarMiddle);
   ToolbarConfig.Add(TfrmOptionsToolbarExtra);

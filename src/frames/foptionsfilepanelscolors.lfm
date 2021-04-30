@@ -9,10 +9,10 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Control = cbTextColor
     AnchorSideTop.Side = asrCenter
     AnchorSideRight.Control = cbTextColor
-    Left = 99
+    Left = 127
     Height = 15
-    Top = 12
-    Width = 57
+    Top = 15
+    Width = 69
     Anchors = [akTop, akRight]
     BorderSpacing.Right = 4
     Caption = 'T&ext Color:'
@@ -20,8 +20,8 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     ParentColor = False
   end
   object cbTextColor: TColorBox[1]
-    Left = 160
-    Height = 22
+    Left = 200
+    Height = 28
     Top = 8
     Width = 200
     Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
@@ -36,8 +36,8 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Control = cbTextColor
     AnchorSideBottom.Control = cbTextColor
     AnchorSideBottom.Side = asrBottom
-    Left = 366
-    Height = 22
+    Left = 406
+    Height = 28
     Top = 8
     Width = 28
     Anchors = [akTop, akLeft, akBottom]
@@ -52,10 +52,10 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrCenter
     AnchorSideRight.Control = lblTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 89
+    Left = 115
     Height = 15
-    Top = 38
-    Width = 67
+    Top = 47
+    Width = 81
     Anchors = [akTop, akRight]
     Caption = 'Bac&kground:'
     FocusControl = cbBackColor
@@ -67,9 +67,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 160
-    Height = 22
-    Top = 34
+    Left = 200
+    Height = 28
+    Top = 40
     Width = 200
     Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
     Anchors = [akTop, akLeft, akRight]
@@ -83,9 +83,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Control = cbBackColor
     AnchorSideBottom.Control = cbBackColor
     AnchorSideBottom.Side = asrBottom
-    Left = 366
-    Height = 22
-    Top = 34
+    Left = 406
+    Height = 28
+    Top = 40
     Width = 28
     Anchors = [akTop, akLeft, akBottom]
     BorderSpacing.Right = 10
@@ -99,10 +99,10 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrCenter
     AnchorSideRight.Control = lblTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 80
+    Left = 103
     Height = 15
-    Top = 64
-    Width = 76
+    Top = 79
+    Width = 93
     Anchors = [akTop, akRight]
     Caption = 'Backg&round 2:'
     FocusControl = cbBackColor2
@@ -114,9 +114,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 160
-    Height = 22
-    Top = 60
+    Left = 200
+    Height = 28
+    Top = 72
     Width = 200
     Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
     Anchors = [akTop, akLeft, akRight]
@@ -130,9 +130,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Control = cbBackColor2
     AnchorSideBottom.Control = cbBackColor2
     AnchorSideBottom.Side = asrBottom
-    Left = 366
-    Height = 22
-    Top = 60
+    Left = 406
+    Height = 28
+    Top = 72
     Width = 28
     Anchors = [akTop, akLeft, akBottom]
     BorderSpacing.Right = 10
@@ -146,10 +146,10 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrCenter
     AnchorSideRight.Control = lblTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 94
+    Left = 121
     Height = 15
-    Top = 90
-    Width = 62
+    Top = 111
+    Width = 75
     Anchors = [akTop, akRight]
     Caption = '&Mark Color:'
     FocusControl = cbMarkColor
@@ -161,9 +161,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 160
-    Height = 22
-    Top = 86
+    Left = 200
+    Height = 28
+    Top = 104
     Width = 200
     Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
     Anchors = [akTop, akLeft, akRight]
@@ -177,9 +177,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Control = cbMarkColor
     AnchorSideBottom.Control = cbMarkColor
     AnchorSideBottom.Side = asrBottom
-    Left = 366
-    Height = 22
-    Top = 86
+    Left = 406
+    Height = 28
+    Top = 104
     Width = 28
     Anchors = [akTop, akLeft, akBottom]
     BorderSpacing.Right = 10
@@ -193,10 +193,10 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrCenter
     AnchorSideRight.Control = lblTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 86
+    Left = 112
     Height = 15
-    Top = 116
-    Width = 70
+    Top = 143
+    Width = 84
     Anchors = [akTop, akRight]
     Caption = 'C&ursor Color:'
     FocusControl = cbCursorColor
@@ -208,9 +208,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 160
-    Height = 22
-    Top = 112
+    Left = 200
+    Height = 28
+    Top = 136
     Width = 200
     Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
     Anchors = [akTop, akLeft, akRight]
@@ -224,9 +224,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Control = cbCursorColor
     AnchorSideBottom.Control = cbCursorColor
     AnchorSideBottom.Side = asrBottom
-    Left = 366
-    Height = 22
-    Top = 112
+    Left = 406
+    Height = 28
+    Top = 136
     Width = 28
     Anchors = [akTop, akLeft, akBottom]
     BorderSpacing.Right = 10
@@ -240,10 +240,10 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrCenter
     AnchorSideRight.Control = lblTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 93
+    Left = 119
     Height = 15
-    Top = 142
-    Width = 63
+    Top = 175
+    Width = 77
     Anchors = [akTop, akRight]
     Caption = 'Cursor Te&xt:'
     FocusControl = cbCursorText
@@ -255,9 +255,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 160
-    Height = 22
-    Top = 138
+    Left = 200
+    Height = 28
+    Top = 168
     Width = 200
     Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
     Anchors = [akTop, akLeft, akRight]
@@ -271,9 +271,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Control = cbCursorText
     AnchorSideBottom.Control = cbCursorText
     AnchorSideBottom.Side = asrBottom
-    Left = 366
-    Height = 22
-    Top = 138
+    Left = 406
+    Height = 28
+    Top = 168
     Width = 28
     Anchors = [akTop, akLeft, akBottom]
     BorderSpacing.Right = 10
@@ -287,10 +287,10 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrCenter
     AnchorSideRight.Control = lblTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 42
+    Left = 56
     Height = 15
-    Top = 168
-    Width = 114
+    Top = 207
+    Width = 140
     Anchors = [akTop, akRight]
     Caption = 'Inactive Cursor Color:'
     FocusControl = cbInactiveCursorColor
@@ -302,9 +302,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 160
-    Height = 22
-    Top = 164
+    Left = 200
+    Height = 28
+    Top = 200
     Width = 200
     Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
     Anchors = [akTop, akLeft, akRight]
@@ -318,9 +318,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Control = cbInactiveCursorColor
     AnchorSideBottom.Control = cbInactiveCursorColor
     AnchorSideBottom.Side = asrBottom
-    Left = 366
-    Height = 22
-    Top = 164
+    Left = 406
+    Height = 28
+    Top = 200
     Width = 28
     Anchors = [akTop, akLeft, akBottom]
     BorderSpacing.Right = 10
@@ -334,10 +334,10 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrCenter
     AnchorSideRight.Control = lblTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 50
+    Left = 65
     Height = 15
-    Top = 194
-    Width = 106
+    Top = 239
+    Width = 131
     Anchors = [akTop, akRight]
     Caption = 'Inactive Mark Color:'
     FocusControl = cbInactiveMarkColor
@@ -349,9 +349,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbTextColor
     AnchorSideRight.Side = asrBottom
-    Left = 160
-    Height = 22
-    Top = 190
+    Left = 200
+    Height = 28
+    Top = 232
     Width = 200
     Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
     Anchors = [akTop, akLeft, akRight]
@@ -365,9 +365,9 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideTop.Control = cbInactiveMarkColor
     AnchorSideBottom.Control = cbInactiveMarkColor
     AnchorSideBottom.Side = asrBottom
-    Left = 366
-    Height = 22
-    Top = 190
+    Left = 406
+    Height = 28
+    Top = 232
     Width = 28
     Anchors = [akTop, akLeft, akBottom]
     BorderSpacing.Right = 10
@@ -384,10 +384,10 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = btnCursorBorderColor
     AnchorSideBottom.Side = asrBottom
-    Left = 406
-    Height = 222
+    Left = 446
+    Height = 276
     Top = 16
-    Width = 15
+    Width = 17
     Anchors = [akTop, akLeft, akBottom]
     BorderSpacing.Left = 12
     BorderSpacing.Top = 8
@@ -400,10 +400,10 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideLeft.Control = dbOptionsVertical
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = cbTextColor
-    Left = 433
-    Height = 19
+    Left = 475
+    Height = 23
     Top = 14
-    Width = 136
+    Width = 173
     BorderSpacing.Top = 6
     Caption = 'U&se Inverted Selection'
     OnChange = cbColorBoxChange
@@ -411,13 +411,12 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
   end
   object cbbUseInactiveSelColor: TCheckBox[26]
     AnchorSideLeft.Control = cbbUseInvertedSelection
-    AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = cbTextColor
-    Left = 579
-    Height = 19
-    Top = 14
-    Width = 133
-    BorderSpacing.Left = 10
+    AnchorSideTop.Side = asrBottom
+    Left = 475
+    Height = 23
+    Top = 42
+    Width = 169
     BorderSpacing.Top = 6
     Caption = 'Use Inactive Sel Color'
     OnChange = cbbUseInactiveSelColorChange
@@ -425,25 +424,25 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
   end
   object cbbUseFrameCursor: TCheckBox[27]
     AnchorSideLeft.Control = cbbUseInvertedSelection
-    AnchorSideTop.Control = cbbUseInvertedSelection
+    AnchorSideTop.Control = cbbUseInactiveSelColor
     AnchorSideTop.Side = asrBottom
-    Left = 433
-    Height = 19
-    Top = 38
-    Width = 113
-    BorderSpacing.Top = 5
+    Left = 475
+    Height = 23
+    Top = 71
+    Width = 142
+    BorderSpacing.Top = 6
     Caption = 'Use &Frame Cursor'
     OnChange = cbbUseFrameCursorChange
     TabOrder = 21
   end
   object lblInactivePanelBrightness: TLabel[28]
     AnchorSideLeft.Control = cbbUseFrameCursor
-    AnchorSideTop.Control = btnResetToDCDefault
+    AnchorSideTop.Control = cbAllowOverColor
     AnchorSideTop.Side = asrBottom
-    Left = 433
+    Left = 475
     Height = 15
-    Top = 94
-    Width = 172
+    Top = 129
+    Width = 218
     BorderSpacing.Top = 6
     Caption = '&Brightness level of inactive panel'
     FocusControl = tbInactivePanelBrightness
@@ -453,12 +452,12 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideLeft.Control = lblInactivePanelBrightness
     AnchorSideTop.Control = lblInactivePanelBrightness
     AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = btnIndColor
+    AnchorSideRight.Control = lblInactivePanelBrightness
     AnchorSideRight.Side = asrBottom
-    Left = 433
-    Height = 26
-    Top = 115
-    Width = 377
+    Left = 475
+    Height = 38
+    Top = 150
+    Width = 218
     Max = 100
     OnChange = tbInactivePanelBrightnessChange
     PageSize = 10
@@ -469,142 +468,7 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     BorderSpacing.Top = 6
     TabOrder = 24
   end
-  object dbFreeSpaceIndicator: TDividerBevel[30]
-    AnchorSideLeft.Control = lblInactivePanelBrightness
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = btnIndColor
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = cbbUseGradientInd
-    Left = 433
-    Height = 15
-    Top = 150
-    Width = 377
-    Caption = 'Drive Free Space Indicator'
-    Anchors = [akLeft, akRight, akBottom]
-  end
-  object cbbUseGradientInd: TCheckBox[31]
-    AnchorSideLeft.Control = lblInactivePanelBrightness
-    AnchorSideTop.Side = asrBottom
-    AnchorSideBottom.Control = cbIndColor
-    Left = 433
-    Height = 19
-    Top = 171
-    Width = 137
-    Anchors = [akLeft, akBottom]
-    BorderSpacing.Top = 6
-    Caption = 'Use &Gradient Indicator'
-    OnChange = cbbUseGradientIndChange
-    TabOrder = 25
-  end
-  object pbxFakeDrive: TPaintBox[32]
-    Tag = 83
-    AnchorSideLeft.Control = cbbUseGradientInd
-    AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = cbbUseGradientInd
-    AnchorSideTop.Side = asrCenter
-    AnchorSideRight.Control = btnIndColor
-    AnchorSideRight.Side = asrBottom
-    Left = 573
-    Height = 10
-    Top = 175
-    Width = 235
-    Anchors = [akTop, akLeft, akRight]
-    BorderSpacing.Left = 3
-    BorderSpacing.Right = 2
-    OnPaint = pbxFakeDrivePaint
-  end
-  object lblIndColor: TLabel[33]
-    AnchorSideTop.Control = cbIndColor
-    AnchorSideTop.Side = asrCenter
-    AnchorSideRight.Control = cbIndColor
-    Left = 464
-    Height = 15
-    Top = 194
-    Width = 108
-    Anchors = [akTop, akRight]
-    BorderSpacing.Right = 4
-    Caption = '&Indicator Fore Color:'
-    FocusControl = cbIndColor
-    ParentColor = False
-  end
-  object cbIndColor: TColorBox[34]
-    AnchorSideTop.Control = cbInactiveMarkColor
-    AnchorSideRight.Side = asrBottom
-    Left = 576
-    Height = 22
-    Top = 190
-    Width = 200
-    Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
-    ItemHeight = 16
-    OnChange = cbIndColorChange
-    TabOrder = 26
-  end
-  object btnIndColor: TButton[35]
-    AnchorSideLeft.Control = cbIndColor
-    AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = cbIndColor
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = cbIndColor
-    AnchorSideBottom.Side = asrBottom
-    Left = 782
-    Height = 22
-    Top = 190
-    Width = 28
-    Anchors = [akTop, akLeft, akBottom]
-    BorderSpacing.Left = 6
-    Caption = '>>'
-    OnClick = btnIndColorClick
-    TabOrder = 27
-  end
-  object lblIndBackColor: TLabel[36]
-    AnchorSideLeft.Control = lblIndColor
-    AnchorSideTop.Control = cbIndBackColor
-    AnchorSideTop.Side = asrCenter
-    AnchorSideRight.Control = lblIndColor
-    AnchorSideRight.Side = asrBottom
-    Left = 462
-    Height = 15
-    Top = 220
-    Width = 110
-    Anchors = [akTop, akRight]
-    Caption = 'In&dicator Back Color:'
-    FocusControl = cbIndBackColor
-    ParentColor = False
-  end
-  object cbIndBackColor: TColorBox[37]
-    AnchorSideLeft.Control = cbIndColor
-    AnchorSideTop.Control = cbIndColor
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = cbIndColor
-    AnchorSideRight.Side = asrBottom
-    Left = 576
-    Height = 22
-    Top = 216
-    Width = 200
-    Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
-    Anchors = [akTop, akLeft, akRight]
-    BorderSpacing.Top = 4
-    ItemHeight = 16
-    OnChange = cbIndColorChange
-    TabOrder = 28
-  end
-  object btnIndBackColor: TButton[38]
-    AnchorSideLeft.Control = btnIndColor
-    AnchorSideTop.Control = cbIndBackColor
-    AnchorSideRight.Control = btnIndColor
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = cbIndBackColor
-    AnchorSideBottom.Side = asrBottom
-    Left = 782
-    Height = 22
-    Top = 216
-    Width = 28
-    Anchors = [akTop, akLeft, akRight, akBottom]
-    Caption = '>>'
-    OnClick = btnIndBackColorClick
-    TabOrder = 29
-  end
-  object pnlPreviewCont: TPanel[39]
+  object pnlPreviewCont: TPanel[30]
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = cbCursorBorderColor
     AnchorSideTop.Side = asrBottom
@@ -613,19 +477,19 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 0
-    Height = 272
-    Top = 249
+    Height = 250
+    Top = 303
     Width = 854
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Top = 11
     BevelOuter = bvNone
     ChildSizing.LeftRightSpacing = 8
-    ClientHeight = 272
+    ClientHeight = 250
     ClientWidth = 854
     Color = clInactiveCaption
     Constraints.MinHeight = 250
     ParentColor = False
-    TabOrder = 30
+    TabOrder = 25
     TabStop = True
     object lblPreview: TLabel
       Left = 8
@@ -641,7 +505,7 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     end
     object pnlLeftPreview: TPanel
       Left = 8
-      Height = 249
+      Height = 227
       Top = 15
       Width = 413
       Align = alClient
@@ -654,7 +518,7 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     end
     object pnlRightPreview: TPanel
       Left = 431
-      Height = 249
+      Height = 227
       Top = 15
       Width = 415
       Align = alRight
@@ -667,7 +531,7 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     end
     object spPanelSplitter: TSplitter
       Left = 421
-      Height = 257
+      Height = 235
       Top = 15
       Width = 10
       Align = alRight
@@ -675,29 +539,29 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
       ResizeAnchor = akRight
     end
   end
-  object cbUseCursorBorder: TCheckBox[40]
+  object cbUseCursorBorder: TCheckBox[31]
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = cbCursorBorderColor
     AnchorSideTop.Side = asrCenter
     AnchorSideRight.Control = cbCursorBorderColor
-    Left = 67
-    Height = 19
-    Top = 218
-    Width = 93
+    Left = 86
+    Height = 23
+    Top = 267
+    Width = 114
     Anchors = [akTop, akRight]
     Caption = 'Cursor border'
     OnChange = cbUseCursorBorderChange
     TabOrder = 16
   end
-  object cbCursorBorderColor: TColorBox[41]
+  object cbCursorBorderColor: TColorBox[32]
     AnchorSideLeft.Control = cbInactiveMarkColor
     AnchorSideTop.Control = cbInactiveMarkColor
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbInactiveMarkColor
     AnchorSideRight.Side = asrBottom
-    Left = 160
-    Height = 22
-    Top = 216
+    Left = 200
+    Height = 28
+    Top = 264
     Width = 200
     Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
     Anchors = [akTop, akLeft, akRight]
@@ -706,15 +570,15 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     OnChange = cbColorBoxChange
     TabOrder = 17
   end
-  object btnCursorBorderColor: TButton[42]
+  object btnCursorBorderColor: TButton[33]
     AnchorSideLeft.Control = btnForeColor
     AnchorSideTop.Control = cbCursorBorderColor
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = cbCursorBorderColor
     AnchorSideBottom.Side = asrBottom
-    Left = 367
-    Height = 22
-    Top = 216
+    Left = 407
+    Height = 28
+    Top = 264
     Width = 28
     Anchors = [akTop, akLeft, akBottom]
     BorderSpacing.Left = 1
@@ -723,35 +587,35 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
     OnClick = btnCursorBorderColorClick
     TabOrder = 18
   end
-  object btnResetToDCDefault: TButton[43]
-    AnchorSideTop.Control = cbAllowOverColor
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = btnIndColor
+  object btnResetToDCDefault: TButton[34]
+    AnchorSideLeft.Control = cbAllowOverColor
+    AnchorSideTop.Control = btnCursorBorderColor
+    AnchorSideRight.Control = tbInactivePanelBrightness
     AnchorSideRight.Side = asrBottom
-    Left = 683
-    Height = 25
-    Top = 63
-    Width = 127
+    Left = 556
+    Height = 27
+    Top = 264
+    Width = 137
     Anchors = [akTop, akRight]
     AutoSize = True
-    BorderSpacing.Top = 6
     Caption = 'Reset to DC default'
     OnClick = btnResetToDCDefaultClick
     TabOrder = 23
   end
-  object cbAllowOverColor: TCheckBox[44]
+  object cbAllowOverColor: TCheckBox[35]
     AnchorSideLeft.Control = cbbUseInactiveSelColor
     AnchorSideTop.Control = cbbUseFrameCursor
-    AnchorSideTop.Side = asrCenter
-    Left = 579
-    Height = 19
-    Top = 38
-    Width = 105
+    AnchorSideTop.Side = asrBottom
+    Left = 475
+    Height = 23
+    Top = 100
+    Width = 129
+    BorderSpacing.Top = 6
     Caption = 'Allow Overcolor'
     OnChange = cbbUseInactiveSelColorChange
     TabOrder = 22
   end
-  object optColorDialog: TColorDialog[45]
+  object optColorDialog: TColorDialog[36]
     Color = clBlack
     CustomColors.Strings = (
       'ColorA=000000'
@@ -775,7 +639,7 @@ inherited frmOptionsFilePanelsColors: TfrmOptionsFilePanelsColors
       'ColorS=F0FBFF'
       'ColorT=A4A0A0'
     )
-    left = 728
-    top = 376
+    Left = 728
+    Top = 376
   end
 end

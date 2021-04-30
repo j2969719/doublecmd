@@ -1,0 +1,961 @@
+inherited frmOptionsColorsGroup: TfrmOptionsColorsGroup
+  Height = 609
+  Width = 867
+  HorzScrollBar.Page = 1
+  VertScrollBar.Page = 1
+  AutoScroll = True
+  ChildSizing.LeftRightSpacing = 5
+  ChildSizing.TopBottomSpacing = 5
+  ChildSizing.HorizontalSpacing = 5
+  ChildSizing.VerticalSpacing = 5
+  ClientHeight = 609
+  ClientWidth = 867
+  DesignLeft = 72
+  DesignTop = 91
+  object gbFreeSpaceIndicator: TGroupBox[0]
+    AnchorSideLeft.Control = gbPathLabel
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = btnResetToDCDefault
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = gbPathLabel
+    AnchorSideBottom.Side = asrBottom
+    Left = 413
+    Height = 181
+    Top = 37
+    Width = 449
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    AutoSize = True
+    BorderSpacing.Top = 5
+    Caption = 'Drive Free Space Indicator'
+    ChildSizing.LeftRightSpacing = 10
+    ChildSizing.TopBottomSpacing = 10
+    ChildSizing.VerticalSpacing = 5
+    ClientHeight = 162
+    ClientWidth = 445
+    TabOrder = 0
+    object cbbUseGradientInd: TCheckBox
+      AnchorSideLeft.Control = gbFreeSpaceIndicator
+      AnchorSideTop.Control = gbFreeSpaceIndicator
+      AnchorSideBottom.Control = cbIndColor
+      Left = 10
+      Height = 23
+      Top = 10
+      Width = 172
+      Caption = 'Use &Gradient Indicator'
+      OnChange = cbbUseGradientIndChange
+      TabOrder = 0
+    end
+    object pbxFakeDrive: TPaintBox
+      Tag = 83
+      AnchorSideLeft.Control = cbbUseGradientInd
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = cbbUseGradientInd
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = btnIndColor
+      AnchorSideRight.Side = asrBottom
+      Left = 185
+      Height = 10
+      Top = 16
+      Width = 248
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Left = 3
+      BorderSpacing.Right = 2
+      OnPaint = pbxFakeDrivePaint
+    end
+    object lblIndColor: TLabel
+      AnchorSideTop.Control = cbIndColor
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = cbIndColor
+      Left = 66
+      Height = 15
+      Top = 45
+      Width = 131
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 4
+      Caption = '&Indicator Fore Color:'
+      FocusControl = cbIndColor
+      ParentColor = False
+    end
+    object cbIndColor: TColorBox
+      AnchorSideTop.Control = cbbUseGradientInd
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = btnIndColor
+      Left = 201
+      Height = 28
+      Top = 38
+      Width = 200
+      Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+      Anchors = [akTop, akRight]
+      ItemHeight = 16
+      OnChange = cbIndColorChange
+      TabOrder = 1
+    end
+    object btnIndColor: TButton
+      AnchorSideLeft.Control = cbIndColor
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = cbIndColor
+      AnchorSideRight.Control = gbFreeSpaceIndicator
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Control = cbIndColor
+      AnchorSideBottom.Side = asrBottom
+      Left = 407
+      Height = 28
+      Top = 38
+      Width = 28
+      Anchors = [akTop, akRight, akBottom]
+      BorderSpacing.Left = 6
+      Caption = '>>'
+      OnClick = btnIndColorClick
+      TabOrder = 2
+    end
+    object lblIndBackColor: TLabel
+      AnchorSideLeft.Control = lblIndColor
+      AnchorSideTop.Control = cbIndBackColor
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = lblIndColor
+      AnchorSideRight.Side = asrBottom
+      Left = 62
+      Height = 15
+      Top = 78
+      Width = 135
+      Anchors = [akTop, akRight]
+      Caption = 'In&dicator Back Color:'
+      FocusControl = cbIndBackColor
+      ParentColor = False
+    end
+    object cbIndBackColor: TColorBox
+      AnchorSideLeft.Control = cbIndColor
+      AnchorSideTop.Control = cbIndColor
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = cbIndColor
+      AnchorSideRight.Side = asrBottom
+      Left = 201
+      Height = 28
+      Top = 71
+      Width = 200
+      Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Top = 4
+      ItemHeight = 16
+      OnChange = cbIndBackColorChange
+      TabOrder = 3
+    end
+    object btnIndBackColor: TButton
+      AnchorSideLeft.Control = btnIndColor
+      AnchorSideTop.Control = cbIndBackColor
+      AnchorSideRight.Control = btnIndColor
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Control = cbIndBackColor
+      AnchorSideBottom.Side = asrBottom
+      Left = 407
+      Height = 28
+      Top = 71
+      Width = 28
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      Caption = '>>'
+      OnClick = btnIndBackColorClick
+      TabOrder = 4
+    end
+  end
+  object btnResetToDCDefault: TButton[1]
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 722
+    Height = 27
+    Top = 5
+    Width = 137
+    Anchors = [akTop, akRight]
+    AutoSize = True
+    BorderSpacing.Top = 5
+    Caption = 'Reset to DC default'
+    OnClick = btnResetToDCDefaultClick
+    TabOrder = 1
+  end
+  object gbPathLabel: TGroupBox[2]
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = btnResetToDCDefault
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 5
+    Height = 181
+    Top = 37
+    Width = 403
+    AutoSize = True
+    Caption = 'Path Label'
+    ChildSizing.LeftRightSpacing = 5
+    ChildSizing.TopBottomSpacing = 5
+    ClientHeight = 162
+    ClientWidth = 399
+    Color = clForm
+    ParentColor = False
+    TabOrder = 2
+    object pPathPreview: TPanel
+      Left = 5
+      Height = 15
+      Top = 5
+      Width = 389
+      Align = alTop
+      AutoSize = True
+      BevelOuter = bvNone
+      ChildSizing.LeftRightSpacing = 2
+      ChildSizing.HorizontalSpacing = 2
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 2
+      ClientHeight = 15
+      ClientWidth = 389
+      TabOrder = 0
+      object lblActivePath: TLabel
+        AnchorSideRight.Control = pPathPreview
+        Left = 2
+        Height = 15
+        Top = 0
+        Width = 186
+        Caption = 'Active Path'
+        ParentColor = False
+      end
+      object lblInactivePath: TLabel
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideRight.Control = pPathPreview
+        AnchorSideRight.Side = asrBottom
+        Left = 190
+        Height = 15
+        Top = 0
+        Width = 197
+        Caption = 'Inactive Path'
+        ParentColor = False
+      end
+    end
+    object pPathColors: TPanel
+      AnchorSideTop.Control = pPathPreview
+      AnchorSideTop.Side = asrBottom
+      Left = 5
+      Height = 137
+      Top = 20
+      Width = 389
+      AutoSize = True
+      BevelOuter = bvNone
+      ChildSizing.LeftRightSpacing = 5
+      ChildSizing.TopBottomSpacing = 5
+      ChildSizing.HorizontalSpacing = 5
+      ChildSizing.VerticalSpacing = 5
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 3
+      ClientHeight = 137
+      ClientWidth = 389
+      TabOrder = 1
+      object lblActiveText: TLabel
+        Left = 5
+        Height = 28
+        Top = 5
+        Width = 137
+        Alignment = taRightJustify
+        Caption = 'Active Text:'
+        FocusControl = cbActiveText
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbActiveText: TColorBox
+        Left = 147
+        Height = 28
+        Top = 5
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbActiveTextChange
+        TabOrder = 0
+      end
+      object btnActiveText: TButton
+        Left = 352
+        Height = 28
+        Top = 5
+        Width = 32
+        AutoSize = True
+        Caption = '>>'
+        OnClick = btnActiveTextClick
+        TabOrder = 1
+      end
+      object lblActiveBg: TLabel
+        Left = 5
+        Height = 28
+        Top = 38
+        Width = 137
+        Alignment = taRightJustify
+        Caption = 'Active Background:'
+        FocusControl = cbActiveBg
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbActiveBg: TColorBox
+        Left = 147
+        Height = 28
+        Top = 38
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbActiveBgChange
+        TabOrder = 2
+      end
+      object btnActiveBg: TButton
+        Left = 352
+        Height = 28
+        Top = 38
+        Width = 32
+        AutoSize = True
+        Caption = '>>'
+        OnClick = btnActiveBgClick
+        TabOrder = 3
+      end
+      object lblInaciveText: TLabel
+        Left = 5
+        Height = 28
+        Top = 71
+        Width = 137
+        Alignment = taRightJustify
+        Caption = 'Inacive Text:'
+        FocusControl = cbInactiveText
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbInactiveText: TColorBox
+        Left = 147
+        Height = 28
+        Top = 71
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbInactiveTextChange
+        TabOrder = 4
+      end
+      object btnInactiveText: TButton
+        Left = 352
+        Height = 28
+        Top = 71
+        Width = 32
+        AutoSize = True
+        Caption = '>>'
+        OnClick = btnInactiveTextClick
+        TabOrder = 5
+      end
+      object lblInactiveBg: TLabel
+        Left = 5
+        Height = 28
+        Top = 104
+        Width = 137
+        Alignment = taRightJustify
+        Caption = 'Inactive Background:'
+        FocusControl = cbInactiveBg
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbInactiveBg: TColorBox
+        Left = 147
+        Height = 28
+        Top = 104
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbInactiveBgChange
+        TabOrder = 6
+      end
+      object btnInactiveBg: TButton
+        Left = 352
+        Height = 28
+        Top = 104
+        Width = 32
+        AutoSize = True
+        Caption = '>>'
+        OnClick = btnInactiveBgClick
+        TabOrder = 7
+      end
+    end
+  end
+  object gbLogWindow: TGroupBox[3]
+    AnchorSideTop.Control = gbPathLabel
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 5
+    Height = 182
+    Top = 223
+    Width = 857
+    Anchors = [akTop, akLeft, akRight]
+    AutoSize = True
+    Caption = 'Log Window'
+    ChildSizing.LeftRightSpacing = 5
+    ChildSizing.TopBottomSpacing = 5
+    ClientHeight = 163
+    ClientWidth = 853
+    Color = clForm
+    ParentColor = False
+    TabOrder = 3
+    object pLogColors: TPanel
+      AnchorSideTop.Control = pLogPreview
+      AnchorSideTop.Side = asrBottom
+      Left = 5
+      Height = 104
+      Top = 54
+      Width = 332
+      AutoSize = True
+      BevelOuter = bvNone
+      ChildSizing.LeftRightSpacing = 5
+      ChildSizing.TopBottomSpacing = 5
+      ChildSizing.HorizontalSpacing = 5
+      ChildSizing.VerticalSpacing = 5
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 3
+      ClientHeight = 104
+      ClientWidth = 332
+      TabOrder = 0
+      object lblInfoColor: TLabel
+        Left = 5
+        Height = 28
+        Top = 5
+        Width = 80
+        Alignment = taRightJustify
+        Caption = 'Information:'
+        FocusControl = cbInfoColor
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbInfoColor: TColorBox
+        Left = 90
+        Height = 28
+        Top = 5
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbInfoColorChange
+        TabOrder = 0
+      end
+      object btnInfoColor: TButton
+        Left = 295
+        Height = 28
+        Top = 5
+        Width = 32
+        Caption = '>>'
+        OnClick = btnInfoColorClick
+        TabOrder = 1
+      end
+      object lblErrorColor: TLabel
+        Left = 5
+        Height = 28
+        Top = 38
+        Width = 80
+        Alignment = taRightJustify
+        Caption = 'Error:'
+        FocusControl = cbErrorColor
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbErrorColor: TColorBox
+        Left = 90
+        Height = 28
+        Top = 38
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbErrorColorChange
+        TabOrder = 2
+      end
+      object btnErrorColor: TButton
+        Left = 295
+        Height = 28
+        Top = 38
+        Width = 32
+        Caption = '>>'
+        OnClick = btnErrorColorClick
+        TabOrder = 3
+      end
+      object lblSuccessColor: TLabel
+        Left = 5
+        Height = 28
+        Top = 71
+        Width = 80
+        Alignment = taRightJustify
+        Caption = 'Success:'
+        FocusControl = cbSuccessColor
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbSuccessColor: TColorBox
+        Left = 90
+        Height = 28
+        Top = 71
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbSuccessColorChange
+        TabOrder = 4
+      end
+      object btnSuccessColor: TButton
+        Left = 295
+        Height = 28
+        Top = 71
+        Width = 32
+        Caption = '>>'
+        OnClick = btnSuccessColorClick
+        TabOrder = 5
+      end
+    end
+    object pLogPreview: TPanel
+      Left = 5
+      Height = 49
+      Top = 5
+      Width = 843
+      Align = alTop
+      AutoSize = True
+      BevelOuter = bvNone
+      ChildSizing.TopBottomSpacing = 2
+      ChildSizing.EnlargeHorizontal = crsScaleChilds
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 1
+      ClientHeight = 49
+      ClientWidth = 843
+      Color = clWindow
+      ParentColor = False
+      TabOrder = 1
+      object lblInfo: TLabel
+        Left = 0
+        Height = 15
+        Top = 2
+        Width = 843
+        Caption = 'Information'
+        Color = clWindow
+        ParentColor = False
+        Transparent = False
+      end
+      object lblError: TLabel
+        Left = 0
+        Height = 15
+        Top = 17
+        Width = 843
+        Caption = 'Error'
+        Color = clWindow
+        ParentColor = False
+        Transparent = False
+      end
+      object lblSuccess: TLabel
+        Left = 0
+        Height = 15
+        Top = 32
+        Width = 843
+        Caption = 'Success'
+        Color = clWindow
+        ParentColor = False
+        Transparent = False
+      end
+    end
+  end
+  object gbDiffer: TGroupBox[4]
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = gbLogWindow
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = gbSyncDirs
+    Left = 5
+    Height = 182
+    Top = 410
+    Width = 483
+    Anchors = [akTop, akLeft, akRight]
+    AutoSize = True
+    Caption = 'Differ'
+    ChildSizing.LeftRightSpacing = 5
+    ChildSizing.TopBottomSpacing = 5
+    ClientHeight = 163
+    ClientWidth = 479
+    Color = clForm
+    ParentColor = False
+    TabOrder = 4
+    object pDifferColors: TPanel
+      AnchorSideTop.Control = pDifferPreview
+      AnchorSideTop.Side = asrBottom
+      Left = 5
+      Height = 104
+      Top = 54
+      Width = 350
+      AutoSize = True
+      BevelOuter = bvNone
+      ChildSizing.LeftRightSpacing = 5
+      ChildSizing.TopBottomSpacing = 5
+      ChildSizing.HorizontalSpacing = 5
+      ChildSizing.VerticalSpacing = 5
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 3
+      ClientHeight = 104
+      ClientWidth = 350
+      TabOrder = 0
+      object lblAddedColor: TLabel
+        Left = 5
+        Height = 28
+        Top = 5
+        Width = 98
+        Alignment = taRightJustify
+        Caption = 'Added Color:'
+        FocusControl = cbAdded
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbAdded: TColorBox
+        Left = 108
+        Height = 28
+        Top = 5
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbAddedChange
+        TabOrder = 0
+      end
+      object btnAdded: TButton
+        Left = 313
+        Height = 28
+        Top = 5
+        Width = 32
+        Caption = '>>'
+        OnClick = btnAddedClick
+        TabOrder = 1
+      end
+      object lblDeletedColor: TLabel
+        Left = 5
+        Height = 28
+        Top = 38
+        Width = 98
+        Alignment = taRightJustify
+        Caption = 'Deleted Color:'
+        FocusControl = cbDeleted
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbDeleted: TColorBox
+        Left = 108
+        Height = 28
+        Top = 38
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbDeletedChange
+        TabOrder = 2
+      end
+      object btnDeleted: TButton
+        Left = 313
+        Height = 28
+        Top = 38
+        Width = 32
+        Caption = '>>'
+        OnClick = btnDeletedClick
+        TabOrder = 3
+      end
+      object lblModifiedColor: TLabel
+        Left = 5
+        Height = 28
+        Top = 71
+        Width = 98
+        Alignment = taRightJustify
+        Caption = 'Modified Color:'
+        FocusControl = cbModified
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbModified: TColorBox
+        Left = 108
+        Height = 28
+        Top = 71
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbModifiedChange
+        TabOrder = 4
+      end
+      object btnModified: TButton
+        Left = 313
+        Height = 28
+        Top = 71
+        Width = 32
+        Caption = '>>'
+        OnClick = btnModifiedClick
+        TabOrder = 5
+      end
+    end
+    object pDifferPreview: TPanel
+      Left = 5
+      Height = 49
+      Top = 5
+      Width = 469
+      Align = alTop
+      AutoSize = True
+      BevelOuter = bvNone
+      ChildSizing.TopBottomSpacing = 2
+      ChildSizing.EnlargeHorizontal = crsScaleChilds
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 1
+      ClientHeight = 49
+      ClientWidth = 469
+      Color = clWindow
+      ParentColor = False
+      TabOrder = 1
+      object lblAdded: TLabel
+        Left = 0
+        Height = 15
+        Top = 2
+        Width = 469
+        Caption = 'Added Text'
+        Color = clWindow
+        Font.Color = clWindowText
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+      end
+      object lblDeleted: TLabel
+        Left = 0
+        Height = 15
+        Top = 17
+        Width = 469
+        Caption = 'Deleted Text'
+        Color = clWindow
+        Font.Color = clWindowText
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+      end
+      object lblModified: TLabel
+        Left = 0
+        Height = 15
+        Top = 32
+        Width = 469
+        Caption = 'Modified Text'
+        Color = clWindow
+        Font.Color = clWindowText
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+      end
+    end
+  end
+  object gbSyncDirs: TGroupBox[5]
+    AnchorSideLeft.Control = gbDiffer
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = gbLogWindow
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 493
+    Height = 183
+    Top = 410
+    Width = 369
+    Anchors = [akTop, akRight]
+    AutoSize = True
+    Caption = 'Synchronize directories'
+    ChildSizing.LeftRightSpacing = 5
+    ChildSizing.TopBottomSpacing = 5
+    ClientHeight = 164
+    ClientWidth = 365
+    Color = clForm
+    ParentColor = False
+    TabOrder = 5
+    object pSyncDirsColors: TPanel
+      Left = 5
+      Height = 104
+      Top = 55
+      Width = 355
+      Align = alClient
+      AutoSize = True
+      BevelOuter = bvNone
+      ChildSizing.LeftRightSpacing = 5
+      ChildSizing.TopBottomSpacing = 5
+      ChildSizing.HorizontalSpacing = 5
+      ChildSizing.VerticalSpacing = 5
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 3
+      ClientHeight = 104
+      ClientWidth = 355
+      TabOrder = 0
+      object lblLeftColor: TLabel
+        Left = 5
+        Height = 28
+        Top = 5
+        Width = 103
+        Alignment = taRightJustify
+        Caption = 'Left Color:'
+        FocusControl = cbLeft
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbLeft: TColorBox
+        Left = 113
+        Height = 28
+        Top = 5
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbLeftChange
+        TabOrder = 0
+      end
+      object btnLeft: TButton
+        Left = 318
+        Height = 28
+        Top = 5
+        Width = 32
+        Caption = '>>'
+        OnClick = btnLeftClick
+        TabOrder = 1
+      end
+      object lblRightColor: TLabel
+        Left = 5
+        Height = 28
+        Top = 38
+        Width = 103
+        Alignment = taRightJustify
+        Caption = 'Right Color:'
+        FocusControl = cbRight
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbRight: TColorBox
+        Left = 113
+        Height = 28
+        Top = 38
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbRightChange
+        TabOrder = 2
+      end
+      object btnRight: TButton
+        Left = 318
+        Height = 28
+        Top = 38
+        Width = 32
+        Caption = '>>'
+        OnClick = btnRightClick
+        TabOrder = 3
+      end
+      object lblUnknownColor: TLabel
+        Left = 5
+        Height = 28
+        Top = 71
+        Width = 103
+        Alignment = taRightJustify
+        Caption = 'Unknown Color:'
+        FocusControl = cbUnknown
+        Layout = tlCenter
+        ParentColor = False
+      end
+      object cbUnknown: TColorBox
+        Left = 113
+        Height = 28
+        Top = 71
+        Width = 200
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbPrettyNames]
+        Constraints.MinWidth = 200
+        ItemHeight = 0
+        OnChange = cbUnknownChange
+        TabOrder = 4
+      end
+      object btnUnknown: TButton
+        Left = 318
+        Height = 28
+        Top = 71
+        Width = 32
+        Caption = '>>'
+        OnClick = btnUnknownClick
+        TabOrder = 5
+      end
+    end
+    object pSyncDirsPreview: TPanel
+      Left = 5
+      Height = 50
+      Top = 5
+      Width = 355
+      Align = alTop
+      BevelOuter = bvNone
+      ChildSizing.TopBottomSpacing = 2
+      ChildSizing.EnlargeHorizontal = crsScaleChilds
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 1
+      ClientHeight = 50
+      ClientWidth = 355
+      Color = clWindow
+      ParentColor = False
+      TabOrder = 1
+      object lblLeft: TLabel
+        Left = 0
+        Height = 15
+        Top = 2
+        Width = 355
+        Caption = 'Left File'
+        Color = clWindow
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+      end
+      object lblRight: TLabel
+        Left = 0
+        Height = 15
+        Top = 17
+        Width = 355
+        Caption = 'Right File'
+        Color = clWindow
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+      end
+      object lblUnknown: TLabel
+        Left = 0
+        Height = 15
+        Top = 32
+        Width = 355
+        Caption = 'Unknown'
+        Color = clWindow
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+      end
+    end
+  end
+  object optColorDialog: TColorDialog[6]
+    Color = clBlack
+    CustomColors.Strings = (
+      'ColorA=000000'
+      'ColorB=000080'
+      'ColorC=008000'
+      'ColorD=008080'
+      'ColorE=800000'
+      'ColorF=800080'
+      'ColorG=808000'
+      'ColorH=808080'
+      'ColorI=C0C0C0'
+      'ColorJ=0000FF'
+      'ColorK=00FF00'
+      'ColorL=00FFFF'
+      'ColorM=FF0000'
+      'ColorN=FF00FF'
+      'ColorO=FFFF00'
+      'ColorP=FFFFFF'
+      'ColorQ=C0DCC0'
+      'ColorR=F0CAA6'
+      'ColorS=F0FBFF'
+      'ColorT=A4A0A0'
+    )
+    Left = 232
+  end
+end
