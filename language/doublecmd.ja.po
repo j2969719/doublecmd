@@ -4084,6 +4084,256 @@ msgstr "カラム数を固定"
 msgid "Fixed columns width"
 msgstr "カラムの幅を固定"
 
+#: tfrmoptionscolorsgroup.btnactivebg.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnactivebg.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnactivetext.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnactivetext.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnadded.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnadded.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btndeleted.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btndeleted.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnerrorcolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnerrorcolor.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btninactivebg.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btninactivebg.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btninactivetext.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btninactivetext.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnindbackcolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnindbackcolor.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnindcolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnindcolor.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btninfocolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btninfocolor.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnleft.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnleft.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnmodified.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnmodified.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnresettodcdefault.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnresettodcdefault.caption"
+msgid "Reset to DC default"
+msgstr "DCのデフォルトにリセット"
+
+#: tfrmoptionscolorsgroup.btnright.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnright.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnsuccesscolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnsuccesscolor.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnunknown.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnunknown.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.cbbusegradientind.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.cbbusegradientind.caption"
+msgid "Use &Gradient Indicator"
+msgstr "グラデーション インジケータを使用(&G)"
+
+#: tfrmoptionscolorsgroup.gbdiffer.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.gbdiffer.caption"
+msgid "Differ"
+msgstr "差分検出"
+
+#: tfrmoptionscolorsgroup.gbfreespaceindicator.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.gbfreespaceindicator.caption"
+msgid "Drive Free Space Indicator"
+msgstr "ドライブの空き容量インジケータ"
+
+#: tfrmoptionscolorsgroup.gblogwindow.caption
+msgid "Log Window"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.gbpathlabel.caption
+msgid "Path Label"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.gbsyncdirs.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.gbsyncdirs.caption"
+msgid "Synchronize directories"
+msgstr "ディレクトリの同期"
+
+#: tfrmoptionscolorsgroup.lblactivebg.caption
+msgid "Active Background:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblactivepath.caption
+msgctxt "tfrmoptionscolorsgroup.lblactivepath.caption"
+msgid "Active Path"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblactivetext.caption
+msgid "Active Text:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lbladded.caption
+msgctxt "tfrmoptionscolorsgroup.lbladded.caption"
+msgid "Added Text"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lbladdedcolor.caption
+msgctxt "tfrmoptionscolorsgroup.lbladdedcolor.caption"
+msgid "Added Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lbldeleted.caption
+msgctxt "tfrmoptionscolorsgroup.lbldeleted.caption"
+msgid "Deleted Text"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lbldeletedcolor.caption
+msgctxt "tfrmoptionscolorsgroup.lbldeletedcolor.caption"
+msgid "Deleted Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblerror.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.lblerror.caption"
+msgid "Error"
+msgstr "エラー"
+
+#: tfrmoptionscolorsgroup.lblerrorcolor.caption
+msgid "Error:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblinacivetext.caption
+msgid "Inacive Text:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblinactivebg.caption
+msgid "Inactive Background:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblinactivepath.caption
+msgctxt "tfrmoptionscolorsgroup.lblinactivepath.caption"
+msgid "Inactive Path"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblindbackcolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.lblindbackcolor.caption"
+msgid "In&dicator Back Color:"
+msgstr "背景色のインジケータ(&d)："
+
+#: tfrmoptionscolorsgroup.lblindcolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.lblindcolor.caption"
+msgid "&Indicator Fore Color:"
+msgstr "前景色のインジケータ(&I)："
+
+#: tfrmoptionscolorsgroup.lblinfo.caption
+msgctxt "tfrmoptionscolorsgroup.lblinfo.caption"
+msgid "Information"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblinfocolor.caption
+msgid "Information:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblleft.caption
+msgid "Left File"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblleftcolor.caption
+msgid "Left Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblmodified.caption
+msgctxt "tfrmoptionscolorsgroup.lblmodified.caption"
+msgid "Modified Text"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblmodifiedcolor.caption
+msgctxt "tfrmoptionscolorsgroup.lblmodifiedcolor.caption"
+msgid "Modified Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblright.caption
+msgid "Right File"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblrightcolor.caption
+msgid "Right Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblsuccess.caption
+msgctxt "tfrmoptionscolorsgroup.lblsuccess.caption"
+msgid "Success"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblsuccesscolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.lblsuccesscolor.caption"
+msgid "Success:"
+msgstr "成功："
+
+#: tfrmoptionscolorsgroup.lblunknown.caption
+msgid "Unknown"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblunknowncolor.caption
+msgid "Unknown Color:"
+msgstr ""
+
 #: tfrmoptionscolumnsview.cbcuttexttocolwidth.caption
 msgid "Cut &text to column width"
 msgstr "カラムの幅で文字列を切断(&t)"
@@ -5974,6 +6224,7 @@ msgid ">>"
 msgstr ">>"
 
 #: tfrmoptionsfilepanelscolors.btnresettodcdefault.caption
+msgctxt "tfrmoptionsfilepanelscolors.btnresettodcdefault.caption"
 msgid "Reset to DC default"
 msgstr "DCのデフォルトにリセット"
 
@@ -5987,6 +6238,7 @@ msgid "Use &Frame Cursor"
 msgstr "枠型カーソル(&F)"
 
 #: tfrmoptionsfilepanelscolors.cbbusegradientind.caption
+msgctxt "tfrmoptionsfilepanelscolors.cbbusegradientind.caption"
 msgid "Use &Gradient Indicator"
 msgstr "グラデーション インジケータを使用(&G)"
 
@@ -6042,10 +6294,12 @@ msgid "&Brightness level of inactive panel"
 msgstr "アクティブでないパネルの明るさのレベル(&B)"
 
 #: tfrmoptionsfilepanelscolors.lblindbackcolor.caption
+msgctxt "tfrmoptionsfilepanelscolors.lblindbackcolor.caption"
 msgid "In&dicator Back Color:"
 msgstr "背景色のインジケータ(&d)："
 
 #: tfrmoptionsfilepanelscolors.lblindcolor.caption
+msgctxt "tfrmoptionsfilepanelscolors.lblindcolor.caption"
 msgid "&Indicator Fore Color:"
 msgstr "前景色のインジケータ(&I)："
 
@@ -8965,6 +9219,7 @@ msgid "Synchronize"
 msgstr "同期"
 
 #: tfrmsyncdirsdlg.caption
+msgctxt "tfrmsyncdirsdlg.caption"
 msgid "Synchronize directories"
 msgstr "ディレクトリの同期"
 
@@ -9942,6 +10197,7 @@ msgid "Read error:"
 msgstr "読み取りエラー："
 
 #: ulng.rschecksumverifysuccess
+msgctxt "ulng.rschecksumverifysuccess"
 msgid "Success:"
 msgstr "成功："
 
@@ -13375,6 +13631,7 @@ msgid "Command"
 msgstr "コマンド"
 
 #: ulng.rssimpleworderror
+msgctxt "ulng.rssimpleworderror"
 msgid "Error"
 msgstr "エラー"
 

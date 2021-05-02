@@ -4021,6 +4021,241 @@ msgstr "固定列数"
 msgid "Fixed columns width"
 msgstr "固定列宽"
 
+#: tfrmoptionscolorsgroup.btnactivebg.caption
+msgctxt "tfrmoptionscolorsgroup.btnactivebg.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btnactivetext.caption
+msgctxt "tfrmoptionscolorsgroup.btnactivetext.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btnadded.caption
+msgctxt "tfrmoptionscolorsgroup.btnadded.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btndeleted.caption
+msgctxt "tfrmoptionscolorsgroup.btndeleted.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btnerrorcolor.caption
+msgctxt "tfrmoptionscolorsgroup.btnerrorcolor.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btninactivebg.caption
+msgctxt "tfrmoptionscolorsgroup.btninactivebg.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btninactivetext.caption
+msgctxt "tfrmoptionscolorsgroup.btninactivetext.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btnindbackcolor.caption
+msgctxt "tfrmoptionscolorsgroup.btnindbackcolor.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btnindcolor.caption
+msgctxt "tfrmoptionscolorsgroup.btnindcolor.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btninfocolor.caption
+msgctxt "tfrmoptionscolorsgroup.btninfocolor.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btnleft.caption
+msgctxt "tfrmoptionscolorsgroup.btnleft.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btnmodified.caption
+msgctxt "tfrmoptionscolorsgroup.btnmodified.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btnresettodcdefault.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnresettodcdefault.caption"
+msgid "Reset to DC default"
+msgstr "重置为 DC 默认值"
+
+#: tfrmoptionscolorsgroup.btnright.caption
+msgctxt "tfrmoptionscolorsgroup.btnright.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btnsuccesscolor.caption
+msgctxt "tfrmoptionscolorsgroup.btnsuccesscolor.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.btnunknown.caption
+msgctxt "tfrmoptionscolorsgroup.btnunknown.caption"
+msgid ">>"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.cbbusegradientind.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.cbbusegradientind.caption"
+msgid "Use &Gradient Indicator"
+msgstr "使用渐变指示器(&G)"
+
+#: tfrmoptionscolorsgroup.gbdiffer.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.gbdiffer.caption"
+msgid "Differ"
+msgstr "比较程序"
+
+#: tfrmoptionscolorsgroup.gbfreespaceindicator.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.gbfreespaceindicator.caption"
+msgid "Drive Free Space Indicator"
+msgstr "驱动可用空间指示器"
+
+#: tfrmoptionscolorsgroup.gblogwindow.caption
+msgid "Log Window"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.gbpathlabel.caption
+msgid "Path Label"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.gbsyncdirs.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.gbsyncdirs.caption"
+msgid "Synchronize directories"
+msgstr "同步文件夹"
+
+#: tfrmoptionscolorsgroup.lblactivebg.caption
+msgid "Active Background:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblactivepath.caption
+msgctxt "tfrmoptionscolorsgroup.lblactivepath.caption"
+msgid "Active Path"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblactivetext.caption
+msgid "Active Text:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lbladded.caption
+msgctxt "tfrmoptionscolorsgroup.lbladded.caption"
+msgid "Added Text"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lbladdedcolor.caption
+msgctxt "tfrmoptionscolorsgroup.lbladdedcolor.caption"
+msgid "Added Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lbldeleted.caption
+msgctxt "tfrmoptionscolorsgroup.lbldeleted.caption"
+msgid "Deleted Text"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lbldeletedcolor.caption
+msgctxt "tfrmoptionscolorsgroup.lbldeletedcolor.caption"
+msgid "Deleted Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblerror.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.lblerror.caption"
+msgid "Error"
+msgstr "错误"
+
+#: tfrmoptionscolorsgroup.lblerrorcolor.caption
+msgid "Error:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblinacivetext.caption
+msgid "Inacive Text:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblinactivebg.caption
+msgid "Inactive Background:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblinactivepath.caption
+msgctxt "tfrmoptionscolorsgroup.lblinactivepath.caption"
+msgid "Inactive Path"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblindbackcolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.lblindbackcolor.caption"
+msgid "In&dicator Back Color:"
+msgstr "指示器背面颜色(&D)："
+
+#: tfrmoptionscolorsgroup.lblindcolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.lblindcolor.caption"
+msgid "&Indicator Fore Color:"
+msgstr "指示器前端颜色(&I)："
+
+#: tfrmoptionscolorsgroup.lblinfo.caption
+msgctxt "tfrmoptionscolorsgroup.lblinfo.caption"
+msgid "Information"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblinfocolor.caption
+msgid "Information:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblleft.caption
+msgid "Left File"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblleftcolor.caption
+msgid "Left Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblmodified.caption
+msgctxt "tfrmoptionscolorsgroup.lblmodified.caption"
+msgid "Modified Text"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblmodifiedcolor.caption
+msgctxt "tfrmoptionscolorsgroup.lblmodifiedcolor.caption"
+msgid "Modified Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblright.caption
+msgid "Right File"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblrightcolor.caption
+msgid "Right Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblsuccess.caption
+msgctxt "tfrmoptionscolorsgroup.lblsuccess.caption"
+msgid "Success"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblsuccesscolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.lblsuccesscolor.caption"
+msgid "Success:"
+msgstr "成功："
+
+#: tfrmoptionscolorsgroup.lblunknown.caption
+msgid "Unknown"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblunknowncolor.caption
+msgid "Unknown Color:"
+msgstr ""
+
 #: tfrmoptionscolumnsview.cbcuttexttocolwidth.caption
 msgid "Cut &text to column width"
 msgstr "按列宽裁剪文本(&T)"
@@ -5889,6 +6124,7 @@ msgid ">>"
 msgstr ""
 
 #: tfrmoptionsfilepanelscolors.btnresettodcdefault.caption
+msgctxt "tfrmoptionsfilepanelscolors.btnresettodcdefault.caption"
 msgid "Reset to DC default"
 msgstr "重置为 DC 默认值"
 
@@ -5902,6 +6138,7 @@ msgid "Use &Frame Cursor"
 msgstr "使用窗体光标(&F)"
 
 #: tfrmoptionsfilepanelscolors.cbbusegradientind.caption
+msgctxt "tfrmoptionsfilepanelscolors.cbbusegradientind.caption"
 msgid "Use &Gradient Indicator"
 msgstr "使用渐变指示器(&G)"
 
@@ -5919,6 +6156,7 @@ msgid "Cursor border"
 msgstr "光标边框"
 
 #: tfrmoptionsfilepanelscolors.dbfreespaceindicator.caption
+msgctxt "tfrmoptionsfilepanelscolors.dbfreespaceindicator.caption"
 msgid "Drive Free Space Indicator"
 msgstr "驱动可用空间指示器"
 
@@ -5953,10 +6191,12 @@ msgid "&Brightness level of inactive panel"
 msgstr "非活动面板的亮度级别(&B)"
 
 #: tfrmoptionsfilepanelscolors.lblindbackcolor.caption
+msgctxt "tfrmoptionsfilepanelscolors.lblindbackcolor.caption"
 msgid "In&dicator Back Color:"
 msgstr "指示器背面颜色(&D)："
 
 #: tfrmoptionsfilepanelscolors.lblindcolor.caption
+msgctxt "tfrmoptionsfilepanelscolors.lblindcolor.caption"
 msgid "&Indicator Fore Color:"
 msgstr "指示器前端颜色(&I)："
 
@@ -8815,6 +9055,7 @@ msgid "Synchronize"
 msgstr "同步"
 
 #: tfrmsyncdirsdlg.caption
+msgctxt "tfrmsyncdirsdlg.caption"
 msgid "Synchronize directories"
 msgstr "同步文件夹"
 
@@ -9780,6 +10021,7 @@ msgid "Read error:"
 msgstr "读取错误："
 
 #: ulng.rschecksumverifysuccess
+msgctxt "ulng.rschecksumverifysuccess"
 msgid "Success:"
 msgstr "成功："
 
@@ -13161,6 +13403,7 @@ msgid "Command"
 msgstr "命令"
 
 #: ulng.rssimpleworderror
+msgctxt "ulng.rssimpleworderror"
 msgid "Error"
 msgstr "错误"
 

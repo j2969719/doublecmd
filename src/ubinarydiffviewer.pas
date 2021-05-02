@@ -27,7 +27,7 @@ unit uBinaryDiffViewer;
 interface
 
 uses
-  Classes, SysUtils, Graphics, ViewerControl;
+  Classes, SysUtils, Graphics, ViewerControl, uGlobs;
 
 type
 
@@ -122,9 +122,10 @@ begin
       for I := 0 to MineLength - 1 do
       begin
         if (I > ForeignLength) or (PWord(P1)^ <> PWord(P2)^) then
-          Canvas.Font.Color := clRed
+          //Canvas.Font.Color := clRed
+          Canvas.Font.Color := gDifferModifiedColor
         else
-          Canvas.Font.Color := clBlack;
+          Canvas.Font.Color := clWindowText;
         SymbolColor[I]:= Canvas.Font.Color;
         WordHex:= Copy(P1, 1, cWordSize);
         Canvas.TextOut(X, Y, WordHex);
@@ -141,7 +142,7 @@ begin
         Canvas.TextOut(X, Y, WordHex[I]);
         Inc(X, SymbolWidth);
       end;
-      Canvas.Font.Color := clBlack
+      Canvas.Font.Color := clWindowText
     end;
   end;
 end;

@@ -4084,6 +4084,256 @@ msgstr "Rögzített oszlop számozással"
 msgid "Fixed columns width"
 msgstr "Rögzített oszlop hosszúsággal"
 
+#: tfrmoptionscolorsgroup.btnactivebg.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnactivebg.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnactivetext.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnactivetext.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnadded.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnadded.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btndeleted.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btndeleted.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnerrorcolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnerrorcolor.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btninactivebg.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btninactivebg.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btninactivetext.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btninactivetext.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnindbackcolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnindbackcolor.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnindcolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnindcolor.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btninfocolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btninfocolor.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnleft.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnleft.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnmodified.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnmodified.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnresettodcdefault.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnresettodcdefault.caption"
+msgid "Reset to DC default"
+msgstr "Visszaállítás DC alapértelmezettre"
+
+#: tfrmoptionscolorsgroup.btnright.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnright.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnsuccesscolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnsuccesscolor.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.btnunknown.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.btnunknown.caption"
+msgid ">>"
+msgstr ">>"
+
+#: tfrmoptionscolorsgroup.cbbusegradientind.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.cbbusegradientind.caption"
+msgid "Use &Gradient Indicator"
+msgstr "Szín&átmenetes kijelző"
+
+#: tfrmoptionscolorsgroup.gbdiffer.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.gbdiffer.caption"
+msgid "Differ"
+msgstr "Különbségvizsgáló"
+
+#: tfrmoptionscolorsgroup.gbfreespaceindicator.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.gbfreespaceindicator.caption"
+msgid "Drive Free Space Indicator"
+msgstr "Meghajtón a szabad terület mutató"
+
+#: tfrmoptionscolorsgroup.gblogwindow.caption
+msgid "Log Window"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.gbpathlabel.caption
+msgid "Path Label"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.gbsyncdirs.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.gbsyncdirs.caption"
+msgid "Synchronize directories"
+msgstr "Könyvtárak szinkronizálása"
+
+#: tfrmoptionscolorsgroup.lblactivebg.caption
+msgid "Active Background:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblactivepath.caption
+msgctxt "tfrmoptionscolorsgroup.lblactivepath.caption"
+msgid "Active Path"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblactivetext.caption
+msgid "Active Text:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lbladded.caption
+msgctxt "tfrmoptionscolorsgroup.lbladded.caption"
+msgid "Added Text"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lbladdedcolor.caption
+msgctxt "tfrmoptionscolorsgroup.lbladdedcolor.caption"
+msgid "Added Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lbldeleted.caption
+msgctxt "tfrmoptionscolorsgroup.lbldeleted.caption"
+msgid "Deleted Text"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lbldeletedcolor.caption
+msgctxt "tfrmoptionscolorsgroup.lbldeletedcolor.caption"
+msgid "Deleted Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblerror.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.lblerror.caption"
+msgid "Error"
+msgstr "Hiba"
+
+#: tfrmoptionscolorsgroup.lblerrorcolor.caption
+msgid "Error:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblinacivetext.caption
+msgid "Inacive Text:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblinactivebg.caption
+msgid "Inactive Background:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblinactivepath.caption
+msgctxt "tfrmoptionscolorsgroup.lblinactivepath.caption"
+msgid "Inactive Path"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblindbackcolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.lblindbackcolor.caption"
+msgid "In&dicator Back Color:"
+msgstr "Mutató háttér szí&ne:"
+
+#: tfrmoptionscolorsgroup.lblindcolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.lblindcolor.caption"
+msgid "&Indicator Fore Color:"
+msgstr "Mutató &előtér szí&ne:"
+
+#: tfrmoptionscolorsgroup.lblinfo.caption
+msgctxt "tfrmoptionscolorsgroup.lblinfo.caption"
+msgid "Information"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblinfocolor.caption
+msgid "Information:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblleft.caption
+msgid "Left File"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblleftcolor.caption
+msgid "Left Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblmodified.caption
+msgctxt "tfrmoptionscolorsgroup.lblmodified.caption"
+msgid "Modified Text"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblmodifiedcolor.caption
+msgctxt "tfrmoptionscolorsgroup.lblmodifiedcolor.caption"
+msgid "Modified Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblright.caption
+msgid "Right File"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblrightcolor.caption
+msgid "Right Color:"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblsuccess.caption
+msgctxt "tfrmoptionscolorsgroup.lblsuccess.caption"
+msgid "Success"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblsuccesscolor.caption
+#, fuzzy
+msgctxt "tfrmoptionscolorsgroup.lblsuccesscolor.caption"
+msgid "Success:"
+msgstr "Sikeres:"
+
+#: tfrmoptionscolorsgroup.lblunknown.caption
+msgid "Unknown"
+msgstr ""
+
+#: tfrmoptionscolorsgroup.lblunknowncolor.caption
+msgid "Unknown Color:"
+msgstr ""
+
 #: tfrmoptionscolumnsview.cbcuttexttocolwidth.caption
 msgctxt "TFRMOPTIONSCOLUMNSVIEW.CBCUTTEXTTOCOLWIDTH.CAPTION"
 msgid "Cut &text to column width"
@@ -5994,6 +6244,7 @@ msgid ">>"
 msgstr ">>"
 
 #: tfrmoptionsfilepanelscolors.btnresettodcdefault.caption
+msgctxt "tfrmoptionsfilepanelscolors.btnresettodcdefault.caption"
 msgid "Reset to DC default"
 msgstr "Visszaállítás DC alapértelmezettre"
 
@@ -6008,6 +6259,7 @@ msgid "Use &Frame Cursor"
 msgstr "Kurz&orkeret használata"
 
 #: tfrmoptionsfilepanelscolors.cbbusegradientind.caption
+msgctxt "tfrmoptionsfilepanelscolors.cbbusegradientind.caption"
 msgid "Use &Gradient Indicator"
 msgstr "Szín&átmenetes kijelző"
 
@@ -6066,10 +6318,12 @@ msgid "&Brightness level of inactive panel"
 msgstr "I&naktív panel fényereje"
 
 #: tfrmoptionsfilepanelscolors.lblindbackcolor.caption
+msgctxt "tfrmoptionsfilepanelscolors.lblindbackcolor.caption"
 msgid "In&dicator Back Color:"
 msgstr "Mutató háttér szí&ne:"
 
 #: tfrmoptionsfilepanelscolors.lblindcolor.caption
+msgctxt "tfrmoptionsfilepanelscolors.lblindcolor.caption"
 msgid "&Indicator Fore Color:"
 msgstr "Mutató &előtér szí&ne:"
 
@@ -9014,6 +9268,7 @@ msgid "Synchronize"
 msgstr "Szinkronizálás"
 
 #: tfrmsyncdirsdlg.caption
+msgctxt "tfrmsyncdirsdlg.caption"
 msgid "Synchronize directories"
 msgstr "Könyvtárak szinkronizálása"
 
@@ -9994,6 +10249,7 @@ msgid "Read error:"
 msgstr "Olvasási hiba:"
 
 #: ulng.rschecksumverifysuccess
+msgctxt "ulng.rschecksumverifysuccess"
 msgid "Success:"
 msgstr "Sikeres:"
 
@@ -13401,6 +13657,7 @@ msgid "Command"
 msgstr "Parancs"
 
 #: ulng.rssimpleworderror
+msgctxt "ulng.rssimpleworderror"
 msgid "Error"
 msgstr "Hiba"
 
