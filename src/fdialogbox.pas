@@ -28,7 +28,8 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Types, Buttons, ExtCtrls, EditBtn, Extension, ComCtrls, DividerBevel, SynEdit;
+  Types, Buttons, ExtCtrls, EditBtn, Extension, ComCtrls, DividerBevel, SynEdit,
+  Menus, SpinEx, ListFilterEdit;
 
 type
 
@@ -56,6 +57,15 @@ type
     DialogPageControl: TPageControl;
     DialogProgressBar: TProgressBar;
     DialogDividerBevel: TDividerBevel;
+
+    DialogMainMenu: TMainMenu;
+    DialogPopupMenu: TPopupMenu;
+    DialogMenuItem: TMenuItem;
+
+    DialogSpinEdit: TSpinEditEx;
+    DialogFloatSpinEdit: TFloatSpinEditEx;
+    DialogListFilterEdit: TListFilterEdit;
+
     // Dialog events
     procedure DialogBoxShow(Sender: TObject);
     procedure DialogBoxClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -93,6 +103,8 @@ type
     procedure CheckBoxChange(Sender: TObject);
     // Timer events
     procedure TimerTimer(Sender: TObject);
+
+    procedure MenuItemClick(Sender: TObject);
   private
     FRect: TRect;
     FText: String;
@@ -608,6 +620,11 @@ begin
         TLabel(Control).Caption:= AText
       else if Control is TFileNameEdit then
         TFileNameEdit(Control).Text:= AText
+      else if Control is TImage then
+        try
+          TImage(Control).Picture.LoadFromFile(AText)
+        except
+        end
       else begin
         TControlProtected(Control).Text:= AText;
       end;
@@ -622,7 +639,9 @@ begin
   DM_SHOWITEM:
     begin
       Result:= PtrInt(Control.Visible);
-      if wParam <> -1 then
+      if Component is TPopupMenu then
+        (Component as TPopupMenu).PopUp
+      else if wParam <> -1 then
         Control.Visible:= Boolean(wParam);
     end;
   DM_SETPROGRESSVALUE:
@@ -858,7 +877,7 @@ var
 begin
   if Assigned(fDlgProc) then
     begin
-      sText:= (Sender as TEdit).Text;
+      sText:= TControlProtected(Sender).Text;
       fDlgProc(FSelf, PAnsiChar((Sender as TControl).Name), DN_CHANGE, PtrInt(PAnsiChar(sText)), 0);
     end;
 end;
@@ -951,6 +970,12 @@ begin
   begin
     fDlgProc(FSelf, PAnsiChar((Sender as TTimer).Name), DN_TIMER, 0, 0);
   end;
+end;
+
+procedure TDialogBox.MenuItemClick(Sender: TObject);
+begin
+  if Assigned(fDlgProc) then
+    fDlgProc(FSelf, PAnsiChar((Sender as TComponent).Name), DN_CLICK,0,0);
 end;
 
 end.

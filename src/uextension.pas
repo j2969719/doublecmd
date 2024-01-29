@@ -46,7 +46,7 @@ type
 implementation
 
 uses
-  Math, LazFileUtils, DCOSUtils, fDialogBox, uGlobs, uGlobsPaths;
+  Math, LazFileUtils, DCOSUtils, fDialogBox, uGlobs, uGlobsPaths, uLuaPas, uShellExecute, DCConvertEncoding;
 
 function Translate(Translation: Pointer; Identifier, Original: PAnsiChar; Output: PAnsiChar; OutLen: Integer): Integer; dcpcall;
 var
@@ -65,6 +65,35 @@ begin
   end;
 end;
 
+function ExtShellExecuteEx(ActionName, FileName, ActiveDir: PAnsiChar): Boolean; dcpcall;
+var
+  sActionName: String;
+  sFileName: String;
+  sActiveDir: String;
+begin
+  sActionName:= CeSysToUtf8(StrPas(ActionName));
+  sFileName:= CeSysToUtf8(StrPas(FileName));
+  sActiveDir:= CeSysToUtf8(StrPas(ActiveDir));
+  Result:= ShellExecuteEx(sActionName, sFileName, sActiveDir);
+end;
+
+function ExtProcessExtCommandFork(Cmd, Params, WorkPath: PAnsiChar; bTerm: Boolean; bKeepTerminalOpen: Boolean): Boolean; dcpcall;
+var
+  sCmd: String;
+  sParams: String;
+  sWorkPath: String;
+begin
+  sCmd:= CeSysToUtf8(StrPas(Cmd));
+  sParams:= CeSysToUtf8(StrPas(Params));
+  sWorkPath:= CeSysToUtf8(StrPas(WorkPath));
+  Result:= ProcessExtCommandFork(sCmd, sParams, sWorkPath, nil, bTerm, bKeepTerminalOpen);
+end;
+
+function ExtExecuteScriptString(Script: PAnsiChar): Boolean; dcpcall;
+begin
+  Result:= ExecuteScriptString(Script);
+end;
+
 { TDcxModule }
 
 destructor TDcxModule.Destroy;
@@ -75,7 +104,7 @@ end;
 
 procedure TDcxModule.InitializeExtension(StartupInfo: PExtensionStartupInfo);
 const
-  VERSION_API = 3;
+  VERSION_API = 4;
 var
   Language: String;
   AFileName, APath: String;
@@ -104,6 +133,10 @@ begin
     VersionAPI:= VERSION_API;
     MsgChoiceBox:= @fDialogBox.MsgChoiceBox;
     DialogBoxParam:= @fDialogBox.DialogBoxParam;
+
+    ExecuteScriptString:= @ExtExecuteScriptString;
+    ShellExecuteEx:= @ExtShellExecuteEx;
+    ProcessExtCommandFork:= @ExtProcessExtCommandFork;
   end;
 end;
 
