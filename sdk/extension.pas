@@ -116,7 +116,12 @@ type
   TDialogBoxLRSProc = function(LRSData: Pointer; DataSize: LongWord; DlgProc: TDlgProc): LongBool; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
   TDialogBoxLFMFileProc = function(lfmFileName: PAnsiChar; DlgProc: TDlgProc): LongBool; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
   TDialogBoxParamProc = function(Data: Pointer; DataSize: LongWord; DlgProc: TDlgProc; Flags: LongWord; UserData, Reserved: Pointer): UIntPtr; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
-  TTranslateStringProc = function(Translation: Pointer; Identifier, Original: PAnsiChar; Output: PAnsiChar; OutLen: Integer): Integer {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
+  TTranslateStringProc = function(Translation: Pointer; Identifier, Original: PAnsiChar; Output: PAnsiChar; OutLen: Integer): Integer; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
+
+  TExecuteScriptStringProc = function(Script: PAnsiChar): Boolean; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
+  TShellExecuteExProc = function(ActionName, FileName, ActiveDir: PAnsiChar): Boolean; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
+  TProcessExtCommandForkProc = function(Cmd, Params, WorkPath: PAnsiChar; bTerm: Boolean; bKeepTerminalOpen: Boolean): Boolean; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
+
 
 type
   PExtensionStartupInfo = ^TExtensionStartupInfo;
@@ -139,8 +144,12 @@ type
     VersionAPI: UIntPtr;
     MsgChoiceBox: TMsgChoiceBoxProc;
     DialogBoxParam: TDialogBoxParamProc;
+
+    ExecuteScriptString: TExecuteScriptStringProc;
+    ShellExecuteEx: TShellExecuteExProc;
+    ProcessExtCommandFork: TProcessExtCommandForkProc;
     // Reserved for future API extension
-    Reserved: packed array [0..Pred(4091 * SizeOf(Pointer))] of Byte;
+    Reserved: packed array [0..Pred(4088 * SizeOf(Pointer))] of Byte;
   end;
 
 type

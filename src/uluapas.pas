@@ -32,6 +32,7 @@ procedure RegisterPackages(L : Plua_State);
 procedure SetPackagePath(L: Plua_State; const Path: String);
 function LuaPCall(L : Plua_State; nargs, nresults : Integer): Boolean;
 function ExecuteScript(const FileName: String; Args: array of String; var sErrorToReportIfAny:string): Boolean;
+function ExecuteScriptString(Script: PAnsiChar): Boolean;
 
 implementation
 
@@ -797,6 +798,43 @@ begin
     if Status <> 0 then begin
       Script:= lua_tostring(L, -1);
       MessageDlg(CeRawToUtf8(Script), mtError, [mbOK], 0);
+    end;
+
+    lua_close(L);
+
+    Result:= (Status = 0);
+  end;
+end;
+
+function ExecuteScriptString(Script: PAnsiChar): Boolean;
+var
+  L: Plua_State;
+  Status: Integer;
+begin
+  Result:= False;
+
+  // Load Lua library
+  if not IsLuaLibLoaded and not LoadLuaLib(mbExpandFileName(gLuaLib)) then
+    Exit;
+
+  L := lua_open;
+  if Assigned(L) then
+  begin
+    luaL_openlibs(L);
+    RegisterPackages(L);
+    SetPackagePath(L, ExtractFilePath(Script));
+
+    // Load script from file
+    Status := luaL_loadstring(L, Script);
+    if (Status = 0) then
+    begin
+      // Execute script
+      Status := lua_pcall(L, 0, 0, 0)
+    end;
+
+    // Check execution result
+    if Status <> 0 then begin
+      logWrite(CeRawToUtf8(lua_tostring(L, -1)), lmtError, True, False);
     end;
 
     lua_close(L);

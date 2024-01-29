@@ -111,6 +111,11 @@ typedef BOOL (DCPCALL *tDialogBoxLFMFileProc)(char* LFMFileName, tDlgProc DlgPro
 typedef uintptr_t (DCPCALL *tDialogBoxParamProc)(void* Data, uint32_t DataSize, tDlgProc DlgProc, uint32_t Flags, void *UserData, void* Reserved);
 typedef int (DCPCALL *tTranslateStringProc)(void *Translation, const char *Identifier, const char *Original, char *Output, int OutLen);
 
+typedef BOOL (DCPCALL *tExecuteScriptStringProc)(const char *Script);
+typedef BOOL (DCPCALL *tShellExecuteExProc)(const char *ActionName, const char *FileName, const char *ActiveDir);
+typedef BOOL (DCPCALL *tProcessExtCommandForkProc)(const char  *Cmd, const char *Params, const char *WorkPath, BOOL bTerm, BOOL bKeepTerminalOpen);
+
+
 #pragma pack(push)
 #pragma pack(1)
 typedef struct {
@@ -128,7 +133,11 @@ typedef struct {
   uintptr_t VersionAPI;
   tMsgChoiceBoxProc MsgChoiceBox;
   tDialogBoxParamProc DialogBoxParam;
-  unsigned char Reserved[4091 * sizeof(void *)];
+
+  tExecuteScriptStringProc ExecuteScriptString;
+  tShellExecuteExProc ShellExecuteEx;
+  tProcessExtCommandForkProc ProcessExtCommandFork;
+  unsigned char Reserved[4088 * sizeof(void *)];
 } tExtensionStartupInfo;
 #pragma pack(pop)
 
