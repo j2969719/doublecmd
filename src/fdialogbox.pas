@@ -248,7 +248,7 @@ begin
   if (DataSize = 0) then Exit(0);
   SetString(DataString, Data, DataSize);
 
-  if (Flags and DB_LRS = 0) then
+  if (Flags and DB_LFM <> 0) then
   begin
     DataString:= LFMToLRS(DataString);
   end
