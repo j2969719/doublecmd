@@ -40,7 +40,18 @@ uses
   Forms, Dialogs, Clipbrd, LazUTF8, LCLVersion, uLng, DCOSUtils,
   DCConvertEncoding, fMain, uFormCommands, uOSUtils, uGlobs, uLog,
   uClipboard, uShowMsg, uLuaStd, uFindEx, uConvEncoding, uFileProcs,
-  uFilePanelSelect, uMasks, LazFileUtils, Character, UnicodeData;
+  uFilePanelSelect, uMasks, LazFileUtils, Character, UnicodeData,
+  fDialogBox, Extension;
+
+const
+  VERSION_API = 1;
+
+type
+  PLDLGUserData = ^DLGUserData;
+  DLGUserData = record
+    L: Plua_State;
+    FuncName: PAnsiChar;
+  end;
 
 procedure luaPushSearchRec(L : Plua_State; Rec: PSearchRecEx);
 begin
@@ -570,6 +581,130 @@ begin
   AStringList.Free;
 end;
 
+function luaDlgProc(pDlg: PtrUInt; DlgItemName: PAnsiChar; Msg, wParam, lParam: PtrInt): PtrInt; cdecl;
+var
+  L: Plua_State;
+  Data: PLDLGUserData;
+begin
+  Result:= 0;
+  Data:= PLDLGUserData(SendDlgMsg(pDlg, nil, DM_GETDLGDATA, 0, 0));
+  if not Assigned(Data) then
+  begin
+    logWrite('Data not assigned Msg = 0x' + IntToHex(Msg), lmtError, True, False);
+    Exit;
+  end;
+
+  L:= Data^.L;
+  lua_getglobal(L, Data^.FuncName);
+  if not lua_isfunction(L, -1) then
+  begin
+    logWrite(Data^.FuncName + ' not a function', lmtError, True, False);
+    Exit;
+  end;
+  lua_pushinteger(L, pDlg);
+  if (DlgItemName = nil) then
+    lua_pushnil(L)
+  else
+    lua_pushstring(L, DlgItemName);
+  lua_pushinteger(L, Msg);
+  lua_pushinteger(L, wParam);
+  lua_pushinteger(L, lParam);
+  LuaPCall(L, 5, 1);
+  //if not lua_isnil(L, -1) and lua_isinteger(L, -1) then
+  //  Result := PtrInt(lua_tointeger(L, -1));
+  lua_pop(L, 1);
+end;
+
+function luaDlgParamToStr(L : Plua_State) : Integer; cdecl;
+var
+  Param: PtrInt;
+begin
+  Result:= 1;
+  Param:= PtrInt(lua_tointeger(L, 1));
+  lua_pushstring(L, PAnsiChar(Param));
+end;
+
+function luaSendDlgMsg(L : Plua_State) : Integer; cdecl;
+var
+  pDlg: PtrUInt;
+  DlgItemName: PAnsiChar;
+  Text: String;
+  pRet, Msg, wParam, lParam: PtrInt;
+begin
+  Result:= 1;
+  if (lua_gettop(L) < 5) then
+  begin
+    logWrite('missing args', lmtError, True, False);
+    lua_pushnil(L);
+    Exit;
+  end;
+  DlgItemName:= nil;
+  pDlg := PtrUInt(Integer(lua_tointeger(L, 1)));
+  if lua_isstring(L, 2) then
+    DlgItemName:= lua_tocstring(L, 2);
+  Msg:= PtrInt(lua_tointeger(L, 3));
+  wParam:= 0;
+  lParam:= 0;
+  if not lua_isnil(L, 4) then
+  begin
+    if lua_isstring(L, 4) then
+    begin
+      Text := lua_tostring(L, 4);
+      wParam := PtrInt(PAnsiChar(Text));
+    end
+    else if lua_isinteger(L, 4) then
+      wParam := PtrInt(lua_tointeger(L, 4));
+  end;
+  if not lua_isnil(L, 5) then
+  begin
+    if lua_isstring(L, 5) then
+      lParam := PtrInt(lua_tocstring(L, 5))
+    else if lua_isinteger(L, 5) then
+      lParam := PtrInt(lua_tointeger(L, 5));
+  end;
+  logWrite(DlgItemName + ' Msg = ' + IntToStr(Msg) + ' wParam = ' + IntToStr(wParam) + ' lParam = ' + inttostr(lParam), lmtError, True, False);
+  pRet:= SendDlgMsg(pDlg, DlgItemName, Msg, wParam, lParam);
+  if (Msg = DM_ENABLE) or (Msg = DM_GETDROPPEDDOWN) or (Msg = DM_SHOWITEM) then
+  begin
+    lua_pushboolean(L, Boolean(pRet));
+  end
+  else if (Msg = DM_GETTEXT) or (Msg = DM_LISTGETITEM) then
+  begin
+    Text:= PAnsiChar(pRet);
+    lua_pushstring(L, Text);
+  end
+  else
+  begin
+    lua_pushinteger(L, pRet);
+  end;
+end;
+
+function luaDialogBoxLFM(L : Plua_State) : Integer; cdecl;
+var
+  pRet: PtrUInt;
+  sData: String;
+  iFlags: UInt32;
+  pReserved: Pointer;
+  UserData: DLGUserData;
+begin
+  Result:= 1;
+  if (lua_gettop(L) < 3) or (not lua_isstring(L, 1) or not lua_isstring(L, 3)) then
+  begin
+    lua_pushnil(L);
+    Exit;
+  end;
+  sData:= lua_tostring(L, 1);
+  iFlags:= DB_FILENAME;
+  if lua_isboolean(L, 2) and (not lua_toboolean(L, 2)) then
+    iFlags:= DB_LFM;
+  UserData.FuncName:= lua_tocstring(L, 3);
+  UserData.L:= L;
+  //UserData tbd
+  pRet:= DialogBoxParam(PAnsiChar(sData), LongWord(Length(sData)), @luaDlgProc, iFlags, @UserData, pReserved);
+  //lua_pushinteger(L, pRet);
+
+end;
+
 function luaLogWrite(L : Plua_State) : Integer; cdecl;
 var
   sText: String;
@@ -702,12 +837,18 @@ begin
     luaP_register(L, 'MessageBox', @luaMessageBox);
     luaP_register(L, 'InputQuery', @luaInputQuery);
     luaP_register(L, 'InputListBox', @luaInputListBox);
-  lua_setglobal(L, 'Dialogs');
+
+    luaP_register(L, 'ParamToStr', @luaDlgParamToStr);
+    luaP_register(L, 'SendDlgMsg', @luaSendDlgMsg);
+    luaP_register(L, 'DialogBoxLFM', @luaDialogBoxLFM);
+    lua_setglobal(L, 'Dialogs');
 
   lua_newtable(L);
     luaP_register(L, 'LogWrite', @luaLogWrite);
     luaP_register(L, 'CurrentPanel', @luaCurrentPanel);
     luaP_register(L, 'ExecuteCommand', @luaExecuteCommand);
+    lua_pushinteger(L, VERSION_API);
+    lua_setfield(L, -2, 'VersionAPI');
   lua_setglobal(L, 'DC');
 
   ReplaceLibrary(L);
