@@ -630,6 +630,7 @@ var
   DlgItemName: PAnsiChar;
   Text: String;
   pRet, Msg, wParam, lParam: PtrInt;
+  wType, lType: Integer;
 begin
   Result:= 1;
   if (lua_gettop(L) < 5) then
@@ -640,28 +641,26 @@ begin
   end;
   DlgItemName:= nil;
   pDlg := PtrUInt(Integer(lua_tointeger(L, 1)));
-  if lua_isstring(L, 2) then
+  if (lua_type(L, 2) = LUA_TSTRING) then
     DlgItemName:= lua_tocstring(L, 2);
   Msg:= PtrInt(lua_tointeger(L, 3));
   wParam:= 0;
   lParam:= 0;
-  if not lua_isnil(L, 4) then
-  begin
-    if lua_isstring(L, 4) then
-    begin
-      Text := lua_tostring(L, 4);
-      wParam := PtrInt(PAnsiChar(Text));
-    end
-    else if lua_isinteger(L, 4) then
-      wParam := PtrInt(lua_tointeger(L, 4));
-  end;
-  if not lua_isnil(L, 5) then
-  begin
-    if lua_isstring(L, 5) then
-      lParam := PtrInt(lua_tocstring(L, 5))
-    else if lua_isinteger(L, 5) then
-      lParam := PtrInt(lua_tointeger(L, 5));
-  end;
+
+  // welp
+  wType:= lua_type(L, 4);
+  lType:= lua_type(L, 5);
+
+  if (wType = LUA_TSTRING) then
+    wParam := PtrInt(lua_tocstring(L, 4))
+  else if (wType = LUA_TNUMBER) then
+    wParam := PtrInt(lua_tointeger(L, 4));
+
+  if (lType = LUA_TSTRING) then
+    lParam := PtrInt(lua_tocstring(L, 5))
+  else if (wType = LUA_TNUMBER) then
+    lParam := PtrInt(lua_tointeger(L, 5));
+
   logWrite(DlgItemName + ' Msg = ' + IntToStr(Msg) + ' wParam = ' + IntToStr(wParam) + ' lParam = ' + inttostr(lParam), lmtError, True, False);
   pRet:= SendDlgMsg(pDlg, DlgItemName, Msg, wParam, lParam);
   if (Msg = DM_ENABLE) or (Msg = DM_GETDROPPEDDOWN) or (Msg = DM_SHOWITEM) then
