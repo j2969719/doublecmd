@@ -41,7 +41,7 @@ uses
   DCConvertEncoding, fMain, uFormCommands, uOSUtils, uGlobs, uLog,
   uClipboard, uShowMsg, uLuaStd, uFindEx, uConvEncoding, uFileProcs,
   uFilePanelSelect, uMasks, LazFileUtils, Character, UnicodeData,
-  fDialogBox, Extension;
+  fDialogBox, Extension, LCLProc, Types;
 
 const
   VERSION_API = 1;
@@ -615,6 +615,37 @@ begin
   lua_pop(L, 1);
 end;
 
+function luaDlgParamsToKeyStr(L : Plua_State) : Integer; cdecl;
+var
+  wParam, lParam: PtrInt;
+  Key: ^Word absolute wParam;
+begin
+  Result:= 1;
+  wParam:= PtrInt(lua_tointeger(L, 1));
+  lParam:= PtrInt(lua_tointeger(L, 2));
+  lua_pushstring(L, PAnsiChar(KeyAndShiftStateToKeyString(Key^, TShiftState(Integer(lParam)))));
+end;
+
+function luaDlgParamKeyHandled(L : Plua_State) : Integer; cdecl;
+var
+  Param: PtrInt;
+  Key: ^Word absolute Param;
+begin
+  Result:= 0;
+  Param:= PtrInt(lua_tointeger(L, 1));
+  Key^:=0;
+end;
+
+function luaDlgParamToKeyCode(L : Plua_State) : Integer; cdecl;
+var
+  Param: PtrInt;
+  Key: ^Word absolute Param;
+begin
+  Result:= 1;
+  Param:= PtrInt(lua_tointeger(L, 1));
+  lua_pushinteger(L, Key^);
+end;
+
 function luaDlgParamToStr(L : Plua_State) : Integer; cdecl;
 var
   Param: PtrInt;
@@ -628,6 +659,7 @@ function luaSendDlgMsg(L : Plua_State) : Integer; cdecl;
 var
   pDlg: PtrUInt;
   DlgItemName: PAnsiChar;
+  Bounds: TRect;
   Text: String;
   pRet, Msg, wParam, lParam: PtrInt;
   wType, lType: Integer;
@@ -653,12 +685,39 @@ begin
 
   if (wType = LUA_TSTRING) then
     wParam := PtrInt(lua_tocstring(L, 4))
+  else if (wType = LUA_TBOOLEAN) then
+  begin
+    if (Boolean(lua_toboolean(L, 4)) = True) then
+      wParam := 1;
+  end
+  else if (wType = LUA_TTABLE) and ((Msg = DM_SETDLGBOUNDS) or (Msg = DM_SETITEMBOUNDS))then
+  begin
+     lua_getfield(L, 4, 'Left');
+     //if lua_isinteger(L, -1) then
+       Bounds.Left:= Longint(lua_tointeger(L, -1));
+     lua_getfield(L, 4, 'Right');
+     //if lua_isinteger(L, -1) then
+       Bounds.Right:= Longint(lua_tointeger(L, -1));
+     lua_getfield(L, 4, 'Top');
+     //if lua_isinteger(L, -1) then
+       Bounds.Top:= Longint(lua_tointeger(L, -1));
+     lua_getfield(L, 4, 'Bottom');
+     //if lua_isinteger(L, -1) then
+       Bounds.Bottom:= Longint(lua_tointeger(L, -1));
+     wParam:= PtrInt(@Bounds);
+  end
   else if (wType = LUA_TNUMBER) then
     wParam := PtrInt(lua_tointeger(L, 4));
 
+
   if (lType = LUA_TSTRING) then
     lParam := PtrInt(lua_tocstring(L, 5))
-  else if (wType = LUA_TNUMBER) then
+  else if (lType = LUA_TBOOLEAN) then
+  begin
+    if (Boolean(lua_toboolean(L, 5)) = True) then
+      lParam := 1;
+  end
+  else if (lType = LUA_TNUMBER) then
     lParam := PtrInt(lua_tointeger(L, 5));
 
   logWrite(DlgItemName + ' Msg = ' + IntToStr(Msg) + ' wParam = ' + IntToStr(wParam) + ' lParam = ' + inttostr(lParam), lmtError, True, False);
@@ -671,6 +730,19 @@ begin
   begin
     Text:= PAnsiChar(pRet);
     lua_pushstring(L, Text);
+  end
+  else if (Msg = DM_GETITEMBOUNDS) or (Msg = DM_GETDLGBOUNDS) then
+  begin
+    Bounds:= PRect(pRet)^;
+    lua_newtable(L);
+    lua_pushinteger(L, Bounds.Left);
+    lua_setfield(L, -2, 'Left');
+    lua_pushinteger(L, Bounds.Right);
+    lua_setfield(L, -2, 'Right');
+    lua_pushinteger(L, Bounds.Top);
+    lua_setfield(L, -2, 'Top');
+    lua_pushinteger(L, Bounds.Bottom);
+    lua_setfield(L, -2, 'Bottom');
   end
   else
   begin
@@ -837,6 +909,9 @@ begin
     luaP_register(L, 'InputQuery', @luaInputQuery);
     luaP_register(L, 'InputListBox', @luaInputListBox);
 
+    luaP_register(L, 'ParamKeyHandled', @luaDlgParamKeyHandled);
+    luaP_register(L, 'ParamsToKeyStr', @luaDlgParamsToKeyStr);
+    luaP_register(L, 'ParamToKeyCode', @luaDlgParamToKeyCode);
     luaP_register(L, 'ParamToStr', @luaDlgParamToStr);
     luaP_register(L, 'SendDlgMsg', @luaSendDlgMsg);
     luaP_register(L, 'DialogBoxLFM', @luaDialogBoxLFM);
