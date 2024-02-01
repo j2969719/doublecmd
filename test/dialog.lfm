@@ -671,6 +671,7 @@ object DialogBox: TDialogBox
     MaxLength = 0
     TabOrder = 12
     OnChange = EditChange
+    OnKeyDown = EditKeyDown
     Text = 'DirectoryEdit1'
   end
   object MainMenu1: TMainMenu

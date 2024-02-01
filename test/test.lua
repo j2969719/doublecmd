@@ -237,7 +237,7 @@ function dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam)
       else
         text = 'RadioGroup1 = ' .. index .. ', Edit1 = ' .. text
       end
-      Dialogs.SendDlgMsg(Dialog, 'ListBox1', my.DM_LISTADDSTR, text, 0)
+      Dialogs.SendDlgMsg(Dialog, 'ListBox1', my.DM_LISTADD, text, 0)
       Dialogs.SendDlgMsg(Dialog, 'ComboBox1', my.DM_LISTADDSTR, text, 0)
       Dialogs.SendDlgMsg(Dialog, 'SynEdit1', my.DM_LISTADDSTR, text, 0)
       Dialogs.SendDlgMsg(Dialog, 'Memo1', my.DM_LISTADDSTR, text, 0)
@@ -266,7 +266,17 @@ function dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam)
     if (DlgItemName == 'Edit1') then
       -- DC.LogWrite(Dialogs.ParamToStr(wParam), my.lmsgInfo, true, false)
     elseif (DlgItemName == 'CheckBox1') then
-      Dialogs.SendDlgMsg(Dialog, 'ListBox1', my.DM_SHOWITEM, (wParam == 1) and 0 or 1 , 0)
+      visible = true
+      if (wParam == 1) then 
+        visible = false
+      end 
+      Dialogs.SendDlgMsg(Dialog, 'ListBox1', my.DM_SHOWITEM, visible, 0)
+      rect = Dialogs.SendDlgMsg(Dialog, nil, my.DM_GETDLGBOUNDS, 0, 0)
+      --DC.LogWrite('Old: Rect.Left = ' .. rect['Left']..' Rect.Right = '.. rect['Right']..' Rect.Top = ' .. rect['Top']..' Rect.Bottom = '.. rect['Bottom'], my.lmsgInfo, true, false)
+      rect['Left'] = rect['Left'] - 3
+      rect['Right'] = rect['Right'] - 3
+      --DC.LogWrite('New: Rect.Left = ' .. rect['Left']..' Rect.Right = '.. rect['Right']..' Rect.Top = ' .. rect['Top']..' Rect.Bottom = '.. rect['Bottom'], my.lmsgInfo, true, false)
+      Dialogs.SendDlgMsg(Dialog, nil, my.DM_SETDLGBOUNDS, rect, 0)
     else
       -- DC.LogWrite(wParam, my.lmsgInfo, true, false)
     end
@@ -278,14 +288,19 @@ function dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam)
     DC.LogWrite(DlgItemName .. ' DN_KILLFOCUS', my.lmsgInfo, true, false)
   elseif (Msg == my.DN_KEYDOWN) then
     DC.LogWrite(DlgItemName .. ' DN_KEYDOWN', my.lmsgInfo, true, false)
+    DC.LogWrite(Dialogs.ParamsToKeyStr(wParam, lParam) .. ' : KeyCode = ' .. Dialogs.ParamToKeyCode(wParam) .. ', ShiftState = ' .. lParam, my.lmsgSuccess, true, false)
+    if (DlgItemName == 'DirectoryEdit1' and Dialogs.ParamsToKeyStr(wParam, lParam) == 'Shift+`') then
+      Dialogs.SendDlgMsg(Dialog, 'DirectoryEdit1', my.DM_SETTEXT, os.getenv('HOME'), 0)
+      Dialogs.ParamKeyHandled(wParam)
+    end 
   elseif (Msg == my.DN_KEYUP) then
     DC.LogWrite(DlgItemName .. ' DN_KEYUP', my.lmsgInfo, true, false)
   elseif (Msg == my.DN_TIMER) then
     DC.LogWrite(DlgItemName .. ' DN_TIMER', my.lmsgInfo, true, false)
   elseif (Msg == my.DN_CLOSE) then
     DC.LogWrite(DlgItemName .. ' DN_CLOSE', my.lmsgInfo, true, false)
-  -- elseif (Msg == my.DN_INITDIALOG) then
-  --  DC.LogWrite(DlgItemName .. ' DN_CLICK', my.lmsgInfo, true, false)
+   elseif (Msg == my.DN_INITDIALOG) then 
+    DC.LogWrite(DlgItemName .. ' DN_INITDIALOG', my.lmsgInfo, true, false)
   end
 
 end
