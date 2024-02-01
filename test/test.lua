@@ -3,222 +3,32 @@ local my = require("common")
 
 lfm_data = [[
 object DialogBox: TDialogBox
-  Left = 303
-  Height = 363
-  Top = 158
-  Width = 559
+  Left = 404
+  Height = 296
+  Top = 142
+  Width = 275
   AutoSize = True
   BorderStyle = bsDialog
-  Caption = 'Options'
+  Caption = 'Sample Text'
   ChildSizing.LeftRightSpacing = 10
   ChildSizing.TopBottomSpacing = 10
-  ClientHeight = 363
-  ClientWidth = 559
+  ChildSizing.HorizontalSpacing = 15
+  ChildSizing.VerticalSpacing = 15
+  ClientHeight = 296
+  ClientWidth = 275
+  OnClose = DialogBoxClose
   OnShow = DialogBoxShow
-  Position = poScreenCenter
-  LCLVersion = '2.0.7.0'
-  object mArcSupported: TMemo
-    AnchorSideTop.Control = dbSupported
-    AnchorSideTop.Side = asrBottom
-    Left = 16
-    Height = 90
-    Top = 210
-    Width = 528
-    BorderSpacing.Top = 5
-    ReadOnly = True
-    ScrollBars = ssAutoBoth
-    TabOrder = 7
-    TabStop = False
-    WantReturns = False
-    WordWrap = False
-  end
-  object dbMounts: TDividerBevel
-    AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = Owner
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
+  Position = poOwnerFormCenter
+  LCLVersion = '3.0.0.3'
+  object ListBox1: TListBox
     Left = 10
-    Height = 17
+    Height = 272
     Top = 10
-    Width = 539
-    Caption = 'Mounts'
-    Anchors = [akTop, akLeft, akRight]
-    BorderSpacing.Left = 5
-    BorderSpacing.Top = 10
-    BorderSpacing.Right = 5
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object fneAddFile: TFileNameEdit
-    AnchorSideLeft.Control = mArcSupported
-    AnchorSideTop.Control = dbMounts
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Side = asrBottom
-    Left = 16
-    Height = 24
-    Top = 32
-    Width = 432
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 23
-    NumGlyphs = 1
-    Anchors = [akTop, akLeft, akRight]
-    BorderSpacing.Top = 5
-    MaxLength = 0
-    TabOrder = 0
-    TabStop = False
-  end
-  object dbSupported: TDividerBevel
-    AnchorSideLeft.Control = dbMounts
-    AnchorSideTop.Control = chkSymlinks
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = dbMounts
-    AnchorSideRight.Side = asrBottom
-    Left = 10
-    Height = 17
-    Top = 188
-    Width = 539
-    Caption = 'Supported archives'
-    Anchors = [akTop, akLeft, akRight]
-    BorderSpacing.Top = 10
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object btnCancel: TBitBtn
-    AnchorSideTop.Control = btnOK
-    AnchorSideRight.Control = btnOK
-    AnchorSideBottom.Control = btnOK
-    AnchorSideBottom.Side = asrBottom
-    Left = 342
-    Height = 30
-    Top = 315
-    Width = 96
-    Anchors = [akTop, akRight, akBottom]
-    BorderSpacing.Right = 10
-    Cancel = True
-    DefaultCaption = True
-    Kind = bkCancel
-    ModalResult = 2
-    OnClick = ButtonClick
-    TabOrder = 8
-  end
-  object btnOK: TBitBtn
-    AnchorSideTop.Control = mArcSupported
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = mArcSupported
-    AnchorSideRight.Side = asrBottom
-    Left = 448
-    Height = 30
-    Top = 315
-    Width = 96
-    Anchors = [akTop, akRight]
-    BorderSpacing.Top = 15
-    Default = True
-    DefaultCaption = True
-    Kind = bkOK
-    ModalResult = 1
-    OnClick = ButtonClick
-    TabOrder = 9
-  end
-  object btnDelete: TButton
-    AnchorSideLeft.Control = lbMounts
-    AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = btnDown
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = mArcSupported
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Side = asrBottom
-    Left = 453
-    Height = 24
-    Top = 119
-    Width = 91
-    Anchors = [akTop, akLeft, akRight]
-    BorderSpacing.Left = 5
-    BorderSpacing.Top = 5
-    Caption = 'Delete'
-    OnClick = ButtonClick
-    TabOrder = 4
-  end
-  object btnAdd: TButton
-    AnchorSideLeft.Control = btnDelete
-    AnchorSideTop.Control = fneAddFile
-    AnchorSideRight.Control = mArcSupported
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = fneAddFile
-    AnchorSideBottom.Side = asrBottom
-    Left = 453
-    Height = 24
-    Top = 32
-    Width = 91
-    Anchors = [akTop, akLeft, akRight, akBottom]
-    Caption = 'Add'
-    OnClick = ButtonClick
-    TabOrder = 1
-  end
-  object chkSymlinks: TCheckBox
-    AnchorSideLeft.Control = mArcSupported
-    AnchorSideTop.Control = lbMounts
-    AnchorSideTop.Side = asrBottom
-    Left = 16
-    Height = 23
-    Top = 155
-    Width = 249
-    BorderSpacing.Top = 10
-    Caption = 'Enable following of symbolic links'
-    TabOrder = 6
-  end
-  object lbMounts: TListBox
-    AnchorSideLeft.Control = mArcSupported
-    AnchorSideTop.Control = fneAddFile
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = fneAddFile
-    AnchorSideRight.Side = asrBottom
-    Left = 16
-    Height = 84
-    Top = 61
-    Width = 432
-    Anchors = [akTop, akLeft, akRight]
-    BorderSpacing.Top = 5
+    Width = 254
     ItemHeight = 0
-    ScrollWidth = 430
-    TabOrder = 5
+    TabOrder = 0
     TopIndex = -1
-  end
-  object btnDown: TButton
-    AnchorSideLeft.Control = lbMounts
-    AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = btnUp
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = mArcSupported
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Side = asrBottom
-    Left = 453
-    Height = 24
-    Top = 90
-    Width = 91
-    Anchors = [akTop, akLeft, akRight]
-    BorderSpacing.Left = 5
-    BorderSpacing.Top = 5
-    Caption = 'Down'
-    OnClick = ButtonClick
-    TabOrder = 3
-  end
-  object btnUp: TButton
-    AnchorSideLeft.Control = lbMounts
-    AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = lbMounts
-    AnchorSideRight.Control = mArcSupported
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Side = asrBottom
-    Left = 453
-    Height = 24
-    Top = 61
-    Width = 91
-    Anchors = [akTop, akLeft, akRight]
-    BorderSpacing.Left = 5
-    Caption = 'Up'
-    OnClick = ButtonClick
-    TabOrder = 2
+    OnClick = ListBoxClick
   end
 end
 ]]
@@ -230,7 +40,7 @@ function dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam)
     DC.LogWrite(DlgItemName .. ' DN_INITDIALOG', my.lmsgInfo, true, false)
     Dialogs.SendDlgMsg(Dialog, nil, my.DM_SETTEXT, 'Monkey', 0)
     Dialogs.SendDlgMsg(Dialog, 'Edit1', my.DM_SETTEXT, 'Caramelldansen', 0)
-    Dialogs.SendDlgMsg(Dialog, 'Timer1', my.DM_TIMERSETINTERVAL, 1000, 0)
+    Dialogs.SendDlgMsg(Dialog, 'Timer1', my.DM_TIMERSETINTERVAL, 0, 0)
   elseif (Msg == my.DN_CLICK) then
     DC.LogWrite(DlgItemName .. ' DN_CLICK', my.lmsgInfo, true, false)
     if (DlgItemName == 'Button1') then
@@ -242,7 +52,7 @@ function dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam)
       else
         text = 'RadioGroup1 = ' .. index .. ', Edit1 = ' .. text
       end
-      Dialogs.SendDlgMsg(Dialog, 'ListBox1', my.DM_LISTADD, text, 0)
+      Dialogs.SendDlgMsg(Dialog, 'ListBox1', my.DM_LISTADDSTR, text, 0)
       Dialogs.SendDlgMsg(Dialog, 'ComboBox1', my.DM_LISTADDSTR, text, 0)
       Dialogs.SendDlgMsg(Dialog, 'SynEdit1', my.DM_LISTADDSTR, text, 0)
       Dialogs.SendDlgMsg(Dialog, 'Memo1', my.DM_LISTADDSTR, text, 0)
@@ -254,7 +64,6 @@ function dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam)
       Dialogs.MessageBox(_VERSION, "", my.MB_OK + my.MB_ICONWARNING)
       
       Dialogs.DialogBoxLFM(lfm_data, false, "dialog_proc")
-      
     elseif (DlgItemName == 'Button2') then
       index = Dialogs.SendDlgMsg(Dialog, 'ListBox1', my.DM_LISTGETITEMINDEX, 0, 0)
       if index == -1 then
@@ -282,6 +91,9 @@ function dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam)
       rect['Right'] = rect['Right'] - 3
       --DC.LogWrite('New: Rect.Left = ' .. rect['Left']..' Rect.Right = '.. rect['Right']..' Rect.Top = ' .. rect['Top']..' Rect.Bottom = '.. rect['Bottom'], my.lmsgInfo, true, false)
       Dialogs.SendDlgMsg(Dialog, nil, my.DM_SETDLGBOUNDS, rect, 0)
+    elseif (DlgItemName == 'SpinEditEx1') then
+      text = Dialogs.SendDlgMsg(Dialog, 'SpinEditEx1', my.DM_GETTEXT, 0, 0)
+      Dialogs.SendDlgMsg(Dialog, 'ProgressBar1', my.DM_SETPROGRESSVALUE, tonumber(text), 0)
     else
       -- DC.LogWrite(wParam, my.lmsgInfo, true, false)
     end

@@ -51,6 +51,8 @@ type
   DLGUserData = record
     L: Plua_State;
     FuncName: PAnsiChar;
+    FuncRef: Integer;
+    DataRef: Integer;
   end;
 
 procedure luaPushSearchRec(L : Plua_State; Rec: PSearchRecEx);
@@ -585,6 +587,7 @@ function luaDlgProc(pDlg: PtrUInt; DlgItemName: PAnsiChar; Msg, wParam, lParam: 
 var
   L: Plua_State;
   Data: PLDLGUserData;
+  Args: Integer;
 begin
   Result:= 0;
   Data:= PLDLGUserData(SendDlgMsg(pDlg, nil, DM_GETDLGDATA, 0, 0));
@@ -596,11 +599,13 @@ begin
 
   L:= Data^.L;
   lua_getglobal(L, Data^.FuncName);
+
   if not lua_isfunction(L, -1) then
   begin
     logWrite(Data^.FuncName + ' not a function', lmtError, True, False);
     Exit;
   end;
+  Args:= 5;
   lua_pushinteger(L, pDlg);
   if (DlgItemName = nil) then
     lua_pushnil(L)
@@ -609,10 +614,26 @@ begin
   lua_pushinteger(L, Msg);
   lua_pushinteger(L, wParam);
   lua_pushinteger(L, lParam);
-  LuaPCall(L, 5, 1);
-  //if not lua_isnil(L, -1) and lua_isinteger(L, -1) then
-  //  Result := PtrInt(lua_tointeger(L, -1));
+  if (Data^.DataRef <> 0) then
+  begin
+    lua_rawgeti(L, LUA_REGISTRYINDEX,Data^.DataRef);
+    Args:= Args + 1;
+  end;
+  LuaPCall(L, Args, 1);
+  if not lua_isnil(L, -1) and (lua_type(L, -1) = LUA_TNUMBER) then
+    Result := PtrInt(lua_tointeger(L, -1));
   lua_pop(L, 1);
+  if (Msg = DN_CLOSE) then
+  begin
+    if (Data^.FuncRef > 0) then
+    begin
+      lual_unref(L, LUA_REGISTRYINDEX, Data^.FuncRef);
+    end;
+    if (Data^.DataRef > 0) then
+    begin
+      lual_unref(L, LUA_REGISTRYINDEX, Data^.DataRef);
+    end;
+  end;
 end;
 
 function luaDlgParamsToKeyStr(L : Plua_State) : Integer; cdecl;
@@ -662,12 +683,15 @@ var
   Bounds: TRect;
   Text: String;
   pRet, Msg, wParam, lParam: PtrInt;
-  wType, lType: Integer;
+  wType, lType, Index, Args: Integer;
+  I, Count: int64;
+  Data: PLDLGUserData;
 begin
   Result:= 1;
-  if (lua_gettop(L) < 5) then
+  Args:= lua_gettop(L);
+  if (Args < 3) then
   begin
-    logWrite('missing args', lmtError, True, False);
+    logWrite('SendDlgMsg: missing arguments', lmtError, True, False);
     lua_pushnil(L);
     Exit;
   end;
@@ -679,48 +703,95 @@ begin
   wParam:= 0;
   lParam:= 0;
 
-  // welp
+  if (Msg = DM_GETDLGDATA) then
+  begin
+    Data:= PLDLGUserData(SendDlgMsg(pDlg, DlgItemName, DM_GETDLGDATA, 0, 0));
+    lua_rawgeti(L, LUA_REGISTRYINDEX, Data^.DataRef);
+    Exit;
+  end
+  else if (Msg = DM_SETDLGDATA) then
+  begin
+    Data:= PLDLGUserData(SendDlgMsg(pDlg, DlgItemName, DM_GETDLGDATA, 0, 0));
+    for I:= 1 to 3 do
+      lua_remove(L, 1);
+    Index:= Data^.DataRef;
+    Data^.DataRef:= luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, Index);
+    lual_unref(L, LUA_REGISTRYINDEX, Integer(Index));
+    Exit;
+  end;
+
   wType:= lua_type(L, 4);
   lType:= lua_type(L, 5);
-
-  if (wType = LUA_TSTRING) then
-    wParam := PtrInt(lua_tocstring(L, 4))
-  else if (wType = LUA_TBOOLEAN) then
+  if (Args > 3) then
   begin
-    if (Boolean(lua_toboolean(L, 4)) = True) then
-      wParam := 1;
-  end
-  else if (wType = LUA_TTABLE) and ((Msg = DM_SETDLGBOUNDS) or (Msg = DM_SETITEMBOUNDS))then
+    if (wType = LUA_TSTRING) then
+      wParam := PtrInt(lua_tocstring(L, 4))
+    else if (wType = LUA_TBOOLEAN) then
+    begin
+      if (Boolean(lua_toboolean(L, 4)) = True) then
+        wParam := 1;
+    end
+    else if (wType = LUA_TTABLE) and ((Msg = DM_SETDLGBOUNDS) or (Msg = DM_SETITEMBOUNDS))then
+    begin
+      lua_getfield(L, 4, 'Left');
+      if (lua_type(L, -1) = LUA_TNUMBER) then
+        Bounds.Left:= Longint(lua_tointeger(L, -1));
+      lua_getfield(L, 4, 'Right');
+      if (lua_type(L, -1) = LUA_TNUMBER) then
+        Bounds.Right:= Longint(lua_tointeger(L, -1));
+      lua_getfield(L, 4, 'Top');
+      if (lua_type(L, -1) = LUA_TNUMBER) then
+        Bounds.Top:= Longint(lua_tointeger(L, -1));
+      lua_getfield(L, 4, 'Bottom');
+      if (lua_type(L, -1) = LUA_TNUMBER) then
+        Bounds.Bottom:= Longint(lua_tointeger(L, -1));
+      wParam:= PtrInt(@Bounds);
+    end
+    else if (wType = LUA_TNUMBER) then
+      wParam := PtrInt(lua_tointeger(L, 4));
+  end;
+
+  if (Msg = DM_LISTDELETE) then
   begin
-     lua_getfield(L, 4, 'Left');
-     //if lua_isinteger(L, -1) then
-       Bounds.Left:= Longint(lua_tointeger(L, -1));
-     lua_getfield(L, 4, 'Right');
-     //if lua_isinteger(L, -1) then
-       Bounds.Right:= Longint(lua_tointeger(L, -1));
-     lua_getfield(L, 4, 'Top');
-     //if lua_isinteger(L, -1) then
-       Bounds.Top:= Longint(lua_tointeger(L, -1));
-     lua_getfield(L, 4, 'Bottom');
-     //if lua_isinteger(L, -1) then
-       Bounds.Bottom:= Longint(lua_tointeger(L, -1));
-     wParam:= PtrInt(@Bounds);
+    pRet:= SendDlgMsg(pDlg, DlgItemName, DM_LISTGETDATA, wParam, lParam);
+    if (pRet > 0) then
+    begin
+      lual_unref(L, LUA_REGISTRYINDEX, Integer(pRet));
+    end;
   end
-  else if (wType = LUA_TNUMBER) then
-    wParam := PtrInt(lua_tointeger(L, 4));
-
-
-  if (lType = LUA_TSTRING) then
-    lParam := PtrInt(lua_tocstring(L, 5))
-  else if (lType = LUA_TBOOLEAN) then
+  else if (Msg = DM_LISTCLEAR) then
   begin
-    if (Boolean(lua_toboolean(L, 5)) = True) then
-      lParam := 1;
-  end
-  else if (lType = LUA_TNUMBER) then
-    lParam := PtrInt(lua_tointeger(L, 5));
+    Count:= Integer(SendDlgMsg(pDlg, DlgItemName, DM_LISTGETCOUNT, wParam, lParam));
+    for I:= 0 to Count-1 do
+    begin
+      pRet:= SendDlgMsg(pDlg, DlgItemName, DM_LISTGETDATA, I, lParam);
+      if (pRet > 0) then
+      begin
+        lual_unref(L, LUA_REGISTRYINDEX, Integer(pRet));
+      end;
+    end;
+  end;
 
-  logWrite(DlgItemName + ' Msg = ' + IntToStr(Msg) + ' wParam = ' + IntToStr(wParam) + ' lParam = ' + inttostr(lParam), lmtError, True, False);
+  if (Args = 5) then
+  begin
+    if (Msg = DM_LISTADD) or (Msg = DM_LISTSETDATA)then
+    begin
+      for Index:= 1 to 4 do
+        lua_remove(L, 1);
+      lParam:= PtrInt(luaL_ref(L, LUA_REGISTRYINDEX));
+    end
+    else if (lType = LUA_TSTRING) then
+      lParam := PtrInt(lua_tocstring(L, 5))
+    else if (lType = LUA_TBOOLEAN) then
+    begin
+      if (Boolean(lua_toboolean(L, 5)) = True) then
+        lParam := 1;
+    end
+    else if (lType = LUA_TNUMBER) then
+      lParam := PtrInt(lua_tointeger(L, 5));
+  end;
+
   pRet:= SendDlgMsg(pDlg, DlgItemName, Msg, wParam, lParam);
   if (Msg = DM_ENABLE) or (Msg = DM_GETDROPPEDDOWN) or (Msg = DM_SHOWITEM) then
   begin
@@ -744,6 +815,10 @@ begin
     lua_pushinteger(L, Bounds.Bottom);
     lua_setfield(L, -2, 'Bottom');
   end
+  else if (Msg = DM_LISTGETDATA) then
+  begin
+    lua_rawgeti(L, LUA_REGISTRYINDEX, Integer(pRet));
+  end
   else
   begin
     lua_pushinteger(L, pRet);
@@ -757,23 +832,34 @@ var
   iFlags: UInt32;
   pReserved: Pointer;
   UserData: DLGUserData;
+  Args: Integer;
 begin
   Result:= 1;
-  if (lua_gettop(L) < 3) or (not lua_isstring(L, 1) or not lua_isstring(L, 3)) then
+  Args:= lua_gettop(L);
+  if (Args < 3) or (not lua_isstring(L, 1) or not lua_isstring(L, 3)) then
   begin
+    logWrite('SendDlgMsg: missing or insufficient arguments', lmtError, True, False);
     lua_pushnil(L);
     Exit;
   end;
-  sData:= lua_tostring(L, 1);
-  iFlags:= DB_FILENAME;
-  if lua_isboolean(L, 2) and (not lua_toboolean(L, 2)) then
-    iFlags:= DB_LFM;
-  UserData.FuncName:= lua_tocstring(L, 3);
   UserData.L:= L;
-  //UserData tbd
+  UserData.FuncRef:= 0;
+  UserData.DataRef:= 0;
+  UserData.FuncName:= '';
+  sData:= lua_tostring(L, 1);
+  lua_remove(L, 1);
+  iFlags:= DB_FILENAME;
+  if lua_isboolean(L, 1) and (not lua_toboolean(L, 1)) then
+    iFlags:= DB_LFM;
+  lua_remove(L, 1);
+  UserData.FuncName:= lua_tocstring(L, 1);
+  if (Args = 4) then
+  begin
+    lua_remove(L, 1);
+    UserData.DataRef:= luaL_ref(L, LUA_REGISTRYINDEX);
+  end;
   pRet:= DialogBoxParam(PAnsiChar(sData), LongWord(Length(sData)), @luaDlgProc, iFlags, @UserData, pReserved);
-  //lua_pushinteger(L, pRet);
-
+  lua_pushinteger(L, Integer(pRet));
 end;
 
 function luaLogWrite(L : Plua_State) : Integer; cdecl;
