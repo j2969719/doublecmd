@@ -12,7 +12,7 @@ object DialogBox: TDialogBox
   ClientWidth = 447
   Menu = MainMenu1
   OnClose = DialogBoxClose
-  OnCreate = DialogBoxShow
+  OnShow = DialogBoxShow
   Position = poOwnerFormCenter
   LCLVersion = '3.0.0.3'
   object Button1: TButton
@@ -696,5 +696,6 @@ object DialogBox: TDialogBox
   object Timer1: TTimer
     Left = 168
     Top = 440
+    OnTimer = TimerTimer
   end
 end

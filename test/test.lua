@@ -14,7 +14,7 @@ object DialogBox: TDialogBox
   ChildSizing.TopBottomSpacing = 10
   ClientHeight = 363
   ClientWidth = 559
-  OnCreate = DialogBoxShow
+  OnShow = DialogBoxShow
   Position = poScreenCenter
   LCLVersion = '2.0.7.0'
   object mArcSupported: TMemo
@@ -226,7 +226,12 @@ end
 
 function dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam)
   -- DC.LogWrite(DlgItemName .. string.format(" Msg = 0x%x", Msg), my.lmsgInfo, true, false)
-  if (Msg == my.DN_CLICK) then
+  if (Msg == my.DN_INITDIALOG) then
+    DC.LogWrite(DlgItemName .. ' DN_INITDIALOG', my.lmsgInfo, true, false)
+    Dialogs.SendDlgMsg(Dialog, nil, my.DM_SETTEXT, 'Monkey', 0)
+    Dialogs.SendDlgMsg(Dialog, 'Edit1', my.DM_SETTEXT, 'Caramelldansen', 0)
+    Dialogs.SendDlgMsg(Dialog, 'Timer1', my.DM_TIMERSETINTERVAL, 1000, 0)
+  elseif (Msg == my.DN_CLICK) then
     DC.LogWrite(DlgItemName .. ' DN_CLICK', my.lmsgInfo, true, false)
     if (DlgItemName == 'Button1') then
       text = Dialogs.SendDlgMsg(Dialog, 'Edit1', my.DM_GETTEXT, 0, 0)
@@ -299,8 +304,6 @@ function dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam)
     DC.LogWrite(DlgItemName .. ' DN_TIMER', my.lmsgInfo, true, false)
   elseif (Msg == my.DN_CLOSE) then
     DC.LogWrite(DlgItemName .. ' DN_CLOSE', my.lmsgInfo, true, false)
-   elseif (Msg == my.DN_INITDIALOG) then 
-    DC.LogWrite(DlgItemName .. ' DN_INITDIALOG', my.lmsgInfo, true, false)
   end
 
 end
