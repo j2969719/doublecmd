@@ -41,7 +41,7 @@ uses
   DCConvertEncoding, fMain, uFormCommands, uOSUtils, uGlobs, uLog,
   uClipboard, uShowMsg, uLuaStd, uFindEx, uConvEncoding, uFileProcs,
   uFilePanelSelect, uMasks, LazFileUtils, Character, UnicodeData,
-  fDialogBox, Extension, LCLProc, Types;
+  fDialogBox, Extension, LCLProc, Types, uGlobsPaths;
 
 const
   VERSION_API = 1;
@@ -583,6 +583,17 @@ begin
   AStringList.Free;
 end;
 
+function luaUTF8EscapeControlChars(L : Plua_State) : Integer; cdecl;
+var
+  S: String;
+  Mode: Integer;
+begin
+  Result:= 1;
+  S:= lua_tostring(L, 1);
+  Mode:= lua_tointeger(L, 2);
+  lua_pushstring(L, Utf8EscapeControlChars(S, TEscapeMode(Mode)));
+end;
+
 function luaDlgProc(pDlg: PtrUInt; DlgItemName: PAnsiChar; Msg, wParam, lParam: PtrInt): PtrInt; cdecl;
 var
   L: Plua_State;
@@ -762,7 +773,7 @@ begin
   end
   else if (Msg = DM_LISTCLEAR) then
   begin
-    Count:= Integer(SendDlgMsg(pDlg, DlgItemName, DM_LISTGETCOUNT, wParam, lParam));
+    Count:= Int64(SendDlgMsg(pDlg, DlgItemName, DM_LISTGETCOUNT, wParam, lParam));
     for I:= 0 to Count-1 do
     begin
       pRet:= SendDlgMsg(pDlg, DlgItemName, DM_LISTGETDATA, I, lParam);
@@ -972,6 +983,7 @@ begin
     luaP_register(L, 'LowerCase', @luaLowerCase);
     luaP_register(L, 'ConvertEncoding', @luaConvertEncoding);
     luaP_register(L, 'DetectEncoding', @luaDetectEncoding);
+    luaP_register(L, 'EscapeControlChars', @luaUTF8EscapeControlChars);
   lua_setglobal(L, 'LazUtf8');
 
   lua_newtable(L);
@@ -1016,13 +1028,14 @@ end;
 
 procedure SetPackagePath(L: Plua_State; const Path: String);
 var
-  APath: String;
+  APath, ANewPath: String;
 begin
   lua_getglobal(L, 'package');
     // Set package.path
     lua_getfield(L, -1, 'path');
       APath := lua_tostring(L, -1);
-      APath := StringReplace(APath, '.' + PathDelim, Path, []);
+      ANewPath := gpExePath + 'scripts' + PathDelim + 'common.lua;' + Path;
+      APath := StringReplace(APath, '.' + PathDelim, ANewPath, []);
     lua_pop(L, 1);
     lua_pushstring(L, APath);
     lua_setfield(L, -2, 'path');
@@ -1097,8 +1110,9 @@ begin
 
     // Check execution result
     if Status <> 0 then begin
-      Script:= lua_tostring(L, -1);
-      MessageDlg(CeRawToUtf8(Script), mtError, [mbOK], 0);
+      Script:= CeRawToUtf8(lua_tostring(L, -1));
+      UTF8FixBroken(PChar(Script));
+      MessageDlg(Script, mtError, [mbOK], 0);
     end;
 
     lua_close(L);
@@ -1123,15 +1137,9 @@ begin
   begin
     luaL_openlibs(L);
     RegisterPackages(L);
-    SetPackagePath(L, ExtractFilePath(Script));
 
     // Load script from file
-    Status := luaL_loadstring(L, Script);
-    if (Status = 0) then
-    begin
-      // Execute script
-      Status := lua_pcall(L, 0, 0, 0)
-    end;
+    Status := luaL_dostring(L, Script);
 
     // Check execution result
     if Status <> 0 then begin

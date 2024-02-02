@@ -97,6 +97,12 @@ local define =
   apLeft = 0,
   apRight = 1,
 
+  -- Mask options
+  moCaseSensitive = 1,
+  moIgnoreAccents = 2,
+  moWindowsMask = 4,
+  moPinyin = 8,
+
   -- Attr
   faReadOnly = 0x00000001, -- The file is read-only.
   faHidden = 0x00000002, -- The file is hidden. In Unix/Linux, this means that the filename starts with a dot.
@@ -166,6 +172,11 @@ local define =
   CONTENT_DELAYIFSLOW = 1, -- ContentGetValue called in foreground
   CONTENT_PASSTHROUGH = 2, -- If requested via contflags_passthrough_size_float: The size is passed in as floating value, TC expects correct value m from the given units value, and optionally a text string
 
+  emPascal = 0,
+  emHexPascal = 1,
+  emHexC = 2,
+  emC = 3,
+  emAsciiControlNames = 4,
 }
 
 return define
