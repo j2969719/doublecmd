@@ -41,7 +41,7 @@ uses
   DCConvertEncoding, fMain, uFormCommands, uOSUtils, uGlobs, uLog,
   uClipboard, uShowMsg, uLuaStd, uFindEx, uConvEncoding, uFileProcs,
   uFilePanelSelect, uMasks, LazFileUtils, Character, UnicodeData,
-  fDialogBox, Extension, LCLProc, Types, uGlobsPaths;
+  fDialogBox, Extension, LCLProc, Types, uGlobsPaths, DCXmlConfig;
 
 const
   VERSION_API = 1;
@@ -594,7 +594,7 @@ begin
   lua_pushstring(L, Utf8EscapeControlChars(S, TEscapeMode(Mode)));
 end;
 
-function luaDlgProc(pDlg: PtrUInt; DlgItemName: PAnsiChar; Msg, wParam, lParam: PtrInt): PtrInt; cdecl;
+function luaDlgProc(pDlg: PtrUInt; DlgItemName: PAnsiChar; Msg, wParam, lParam: PtrInt): PtrInt; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
 var
   L: Plua_State;
   Data: PLDLGUserData;
@@ -695,7 +695,7 @@ var
   Text: String;
   pRet, Msg, wParam, lParam: PtrInt;
   wType, lType, Index, Args: Integer;
-  I, Count: int64;
+  I, Count: Longint;
   Data: PLDLGUserData;
 begin
   Result:= 1;
@@ -773,7 +773,7 @@ begin
   end
   else if (Msg = DM_LISTCLEAR) then
   begin
-    Count:= Int64(SendDlgMsg(pDlg, DlgItemName, DM_LISTGETCOUNT, wParam, lParam));
+    Count:= longint(SendDlgMsg(pDlg, DlgItemName, DM_LISTGETCOUNT, wParam, lParam));
     for I:= 0 to Count-1 do
     begin
       pRet:= SendDlgMsg(pDlg, DlgItemName, DM_LISTGETDATA, I, lParam);
@@ -871,6 +871,23 @@ begin
   end;
   pRet:= DialogBoxParam(PAnsiChar(sData), LongWord(Length(sData)), @luaDlgProc, iFlags, @UserData, pReserved);
   lua_pushinteger(L, Integer(pRet));
+end;
+
+function luaConfigGetContent(L : Plua_State) : Integer; cdecl;
+var
+  Path, Content: String;
+  Node: TXmlNode;
+begin
+  Result:= 1;
+  Path:= lua_tostring(L, 1);
+  Node:= gConfig.FindNode(gConfig.RootNode, Path, False);
+  if (Node = nil) then
+  begin
+    lua_pushnil(L);
+    Exit;
+  end;
+  Content:= gConfig.GetContent(Node);
+  lua_pushstring(L, Content);
 end;
 
 function luaLogWrite(L : Plua_State) : Integer; cdecl;
@@ -1019,6 +1036,7 @@ begin
     luaP_register(L, 'LogWrite', @luaLogWrite);
     luaP_register(L, 'CurrentPanel', @luaCurrentPanel);
     luaP_register(L, 'ExecuteCommand', @luaExecuteCommand);
+    luaP_register(L, 'ConfigGetContent', @luaConfigGetContent);
     lua_pushinteger(L, VERSION_API);
     lua_setfield(L, -2, 'VersionAPI');
   lua_setglobal(L, 'DC');

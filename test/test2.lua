@@ -25,6 +25,7 @@ object DialogBox: TDialogBox
     Height = 272
     Top = 10
     Width = 254
+    Font.Name = 'FONT_NAME'
     ItemHeight = 0
     TabOrder = 0
     TopIndex = -1
@@ -67,4 +68,5 @@ function userdata_dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam, UserData
   end
 end
 
+lfm_data = lfm_data:gsub("FONT_NAME", DC.ConfigGetContent("Fonts/Editor/Name"):gsub("'", "''"))
 Dialogs.DialogBoxLFM(lfm_data, false, "userdata_dialog_proc", fields)
