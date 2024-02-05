@@ -453,7 +453,10 @@ begin
       if Control is TComboBox then
         TComboBox(Control).ItemIndex:= wParam
       else if Control is TListBox then
-        TListBox(Control).ItemIndex:= wParam
+      begin
+        TListBox(Control).ItemIndex:= wParam;
+        TListBox(Control).MakeCurrentVisible;
+      end
       else if Control is TRadioGroup then
         TRadioGroup(Control).ItemIndex:= wParam;
     end;

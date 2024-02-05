@@ -28,6 +28,8 @@ procedure FillAndCount(Files: TFiles; out NewFiles: TFiles;
 
 procedure InstallPlugin(const FileName: String);
 
+function ExtractFromArchive(const FileName: String; ArchiveSign: Boolean; OutFiles: TStringList; const DestDir: String): Boolean;
+
 implementation
 
 uses
@@ -326,6 +328,40 @@ begin
   aFolderList.Free;
 end;
 
+function ExtractFromArchive(const FileName: String; ArchiveSign: Boolean; OutFiles: TStringList; const DestDir: String): Boolean;
+var
+  AFile: TFile;
+  ArcFiles, ExtractFiles: TFiles;
+  FileSource: IArchiveFileSource;
+  Operation: TArchiveCopyOutOperation;
+  Index, Pos: Integer;
+begin
+  Result:= False;
+  try
+    FileSource := GetArchiveFileSourceDirect(TFileSystemFileSource.GetFileSource, FileName, EmptyStr, ArchiveSign, True);
+    if (FileSource <> nil) then
+    begin
+      ArcFiles:= FileSource.GetFiles(PathDelim);
+      ExtractFiles:= TFiles.Create(PathDelim);
+      for Index:= 0 to ArcFiles.Count - 1 do
+      begin
+        if (OutFiles.Find(ArcFiles[Index].Name, Pos) = True) then
+          ExtractFiles.Add(ArcFiles[Index].Clone);
+      end;
+      Operation:= FileSource.CreateCopyOutOperation(TFileSystemFileSource.GetFileSource, ExtractFiles, DestDir) as TArchiveCopyOutOperation;
+      try
+        Operation.Execute;
+        if (Operation.Result = fsorFinished) then
+          Result:= True;
+      finally
+        Operation.Free;
+      end;
+      ArcFiles.Free;
+      ExtractFiles.Free;
+    end;
+  except
+  end;
+end;
 procedure InstallPlugin(const FileName: String);
 var
   AFile: TFile;
