@@ -1,5 +1,5 @@
 
-local my = require("common")
+local my = require("doublecmd-common.lua")
 
 lfm_data = [[
 object DialogBox: TDialogBox
