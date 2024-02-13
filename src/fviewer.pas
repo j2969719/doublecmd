@@ -3048,10 +3048,17 @@ begin
 
     // Choose search start position.
     if FLastSearchPos <> ViewerControl.CaretPos then
+    begin
+      FLastMatchLength := 0;
       FLastSearchPos := ViewerControl.CaretPos
+    end
     else if FFindDialog.cbRegExp.Checked then
     begin
-      if bNewSearch then FLastSearchPos := 0;
+      if bNewSearch then
+      begin
+        FLastSearchPos := 0;
+        FLastMatchLength := 0;
+      end;
     end
     else if not bSearchBackwards then
     begin
@@ -3153,6 +3160,7 @@ begin
           ViewerControl.SelectText(0, 0);
         end;
         bNewSearch := True;
+        FLastMatchLength := 0;
         FLastSearchPos := ViewerControl.CaretPos;
       end;
     end;
@@ -3230,6 +3238,10 @@ end;
 
 procedure TfrmViewer.ActivatePanel(Panel: TPanel);
 begin
+  bPlugin    := (Panel = nil);
+  bAnimation := (Panel = pnlImage) and (GifAnim.Visible);
+  bImage     := (Panel = pnlImage) and (bAnimation = False);
+
   if Panel <> pnlText then pnlText.Hide;
   if Panel <> pnlCode then pnlCode.Hide;
   if Panel <> pnlImage then pnlImage.Hide;
@@ -3282,9 +3294,6 @@ begin
     ToolBar1.Visible:= not (bQuickView or (miFullScreen.Checked and not ToolBar1.MouseInClient));
   end;
 
-  bAnimation           := (Panel = pnlImage) and (GifAnim.Visible);
-  bImage               := (Panel = pnlImage) and (bAnimation = False);
-  bPlugin              := (Panel = nil);
   miPlugins.Checked    := (Panel = nil);
   miGraphics.Checked   := (Panel = pnlImage);
   miEncoding.Visible   := (Panel = nil) or (Panel = pnlText) or (Panel = pnlCode);
