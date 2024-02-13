@@ -46,6 +46,8 @@ const
   DM_SETPASSWORDCHAR      = DM_FIRST+39;
   DM_LISTCLEAR            = DM_FIRST+40;
   DM_TIMERSETINTERVAL     = DM_FIRST+41;
+  DM_LOADFROMFILE         = DM_FIRST+42;
+  DM_SAVETOFILE           = DM_FIRST+43;
 
   // events messages
   DN_FIRST                = $1000;

@@ -41,8 +41,8 @@ uses
   DCConvertEncoding, fMain, uFormCommands, uOSUtils, uGlobs, uLog,
   uClipboard, uShowMsg, uLuaStd, uFindEx, uConvEncoding, uFileProcs,
   uFilePanelSelect, uMasks, LazFileUtils, Character, UnicodeData,
-  fDialogBox, Extension, LCLProc, Types, uGlobsPaths, DCXmlConfig,
-  uArchiveFileSourceUtil;
+  fDialogBox, Extension, uExtension, LCLProc, Types, uGlobsPaths,
+  DCXmlConfig, uArchiveFileSourceUtil;
 
 const
   VERSION_API = 1;
@@ -760,6 +760,8 @@ begin
         Bounds.Bottom:= Longint(lua_tointeger(L, -1));
       wParam:= PtrInt(@Bounds);
     end
+    else if (Msg = DM_SETTEXT) or (Msg = DM_LISTADD) or (Msg = DM_LISTADDSTR) then
+      wParam := PtrInt(lua_tocstring(L, 4))
     else if (wType = LUA_TNUMBER) then
       wParam := PtrInt(lua_tointeger(L, 4));
   end;
@@ -800,6 +802,8 @@ begin
       if (Boolean(lua_toboolean(L, 5)) = True) then
         lParam := 1;
     end
+    else if (Msg = DM_LISTINDEXOF) or (Msg = DM_LISTINSERT) or (Msg = DM_LISTUPDATE) then
+      lParam := PtrInt(lua_tocstring(L, 4))
     else if (lType = LUA_TNUMBER) then
       lParam := PtrInt(lua_tointeger(L, 5));
   end;
@@ -873,6 +877,7 @@ begin
   pRet:= DialogBoxParam(PAnsiChar(sData), LongWord(Length(sData)), @luaDlgProc, iFlags, @UserData, pReserved);
   lua_pushinteger(L, Integer(pRet));
 end;
+
 function luaExtractFromArchive(L: Plua_State) : Integer; cdecl;
 var
   AIndex, ACount: Integer;
@@ -1068,7 +1073,9 @@ begin
     luaP_register(L, 'ConfigGetContent', @luaConfigGetContent);
     luaP_register(L, 'ExtractFromArchive', @luaExtractFromArchive);
     lua_pushinteger(L, VERSION_API);
-    lua_setfield(L, -2, 'VersionAPI');
+    lua_setfield(L, -2, 'LuaAPI');
+    lua_pushinteger(L, uExtension.VERSION_API);
+    lua_setfield(L, -2, 'ExtensionAPI');
   lua_setglobal(L, 'DC');
 
   ReplaceLibrary(L);
@@ -1078,13 +1085,13 @@ procedure SetPackagePath(L: Plua_State; const Path: String);
 var
   APath, ANewPath: String;
 const
-  COMMON_FILE = 'scripts' + PathDelim + 'doublecmd-common.lua;';
+  COMMON_FILES = 'scripts' + PathDelim + 'lua' + PathDelim + '?.lua;';
 begin
   lua_getglobal(L, 'package');
     // Set package.path
     lua_getfield(L, -1, 'path');
       APath := lua_tostring(L, -1);
-      ANewPath := gpExePath + COMMON_FILE + Path;
+      ANewPath := gpExePath + COMMON_FILES + Path;
       APath := StringReplace(APath, '.' + PathDelim, ANewPath, []);
     lua_pop(L, 1);
     lua_pushstring(L, APath);
