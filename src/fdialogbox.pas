@@ -69,6 +69,12 @@ type
     // Dialog events
     procedure DialogBoxShow(Sender: TObject);
     procedure DialogBoxClose(Sender: TObject; var CloseAction: TCloseAction);
+    // Genetic Control events
+    procedure LCLControlClick(Sender: TObject);
+    procedure LCLControlEnter(Sender: TObject);
+    procedure LCLControlExit(Sender: TObject);
+    procedure LCLControlKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure LCLControlKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     // Button events
     procedure ButtonClick(Sender: TObject);
     procedure ButtonEnter(Sender: TObject);
@@ -101,10 +107,13 @@ type
     procedure ListBoxKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     // CheckBox events
     procedure CheckBoxChange(Sender: TObject);
+    // RadioGroup events
+    procedure RadioGroupSelectionChange(Sender: TObject);
     // Timer events
     procedure TimerTimer(Sender: TObject);
-
+    // MenuItem events
     procedure MenuItemClick(Sender: TObject);
+
   private
     FRect: TRect;
     FText: String;
@@ -135,7 +144,7 @@ implementation
 
 uses
   LCLStrConsts, LazFileUtils, DCClassesUtf8, DCOSUtils, DCStrUtils, uShowMsg,
-  uDebug, uTranslator, uGlobs, uFileProcs;
+  uDebug, uTranslator, uGlobs, uFileProcs, uPixMapManager;
 
 type
   TControlProtected = class(TControl);
@@ -270,6 +279,7 @@ var
   pResult: Pointer absolute Result;
   DialogBox: TDialogBox absolute pDlg;
   Control: TControl absolute Component;
+  bt: TBitmap;
 begin
   // find component by name
   if (DlgItemName = nil) then
@@ -675,6 +685,50 @@ begin
         TTimer(Component).Interval:= wParam;
       end;
     end;
+  DM_LOADFROMFILE:
+    begin
+      Result:= 1;
+      AText:= StrPas(wText);
+      try
+        if Control is TMemo then
+          TMemo(Control).Lines.LoadFromFile(AText)
+        else if Control is TSynEdit then
+          TSynEdit(Control).Lines.LoadFromFile(AText)
+        else if Control is TImage then
+        begin
+          // TImage(Control).Picture.LoadFromFile(AText);
+          AText:= StrPas(wText);
+          bt:=PixMapManager.LoadBitmapEnhanced(AText, lParam, (lParam <> 0), TImage(Control).Color);
+          TImage(Control).Picture.Assign(bt);
+          bt.free;
+        end;
+      except on E: Exception do
+        begin
+          Result:= 0;
+          if Boolean(lParam) = True then
+            MessageDlg(E.Message, mtError, [mbOK], 0);
+        end;
+      end;
+    end;
+  DM_SAVETOFILE:
+    begin
+      Result:= 1;
+      AText:= StrPas(wText);
+      try
+        if Control is TMemo then
+          TMemo(Control).Lines.SaveToFile(AText)
+        else if Control is TSynEdit then
+          TSynEdit(Control).Lines.SaveToFile(AText)
+        else if Control is TImage then
+          TImage(Control).Picture.SaveToFile(AText);
+      except on E: Exception do
+        begin
+          Result:= 0;
+          if Boolean(lParam) = True then
+            MessageDlg(E.Message, mtError, [mbOK], 0);
+        end;
+      end;
+    end;
   end;
 end;
 
@@ -782,6 +836,38 @@ procedure TDialogBox.DialogBoxClose(Sender: TObject; var CloseAction: TCloseActi
 begin
   if Assigned(fDlgProc) then
     fDlgProc(FSelf, PAnsiChar((Sender as TControl).Name), DN_CLOSE, 0, 0);
+end;
+
+procedure TDialogBox.LCLControlClick(Sender: TObject);
+begin
+  if Assigned(fDlgProc) then
+    fDlgProc(FSelf, PAnsiChar((Sender as TControl).Name), DN_CLICK,0,0);
+end;
+
+procedure TDialogBox.LCLControlEnter(Sender: TObject);
+begin
+  if Assigned(fDlgProc) then
+    fDlgProc(FSelf, PAnsiChar((Sender as TControl).Name), DN_GOTFOCUS,0,0);
+end;
+
+procedure TDialogBox.LCLControlExit(Sender: TObject);
+begin
+  if Assigned(fDlgProc) then
+    fDlgProc(FSelf, PAnsiChar((Sender as TControl).Name), DN_KILLFOCUS,0,0);
+end;
+
+procedure TDialogBox.LCLControlKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Assigned(fDlgProc) then
+    fDlgProc(FSelf, PAnsiChar((Sender as TControl).Name), DN_KEYDOWN, PtrInt(@Key), Integer(Shift));
+end;
+
+procedure TDialogBox.LCLControlKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Assigned(fDlgProc) then
+    fDlgProc(FSelf, PAnsiChar((Sender as TControl).Name), DN_KEYUP, PtrInt(@Key), Integer(Shift));
 end;
 
 procedure TDialogBox.ButtonClick(Sender: TObject);
@@ -967,6 +1053,14 @@ begin
     end;
 end;
 
+procedure TDialogBox.RadioGroupSelectionChange(Sender: TObject);
+begin
+  if Assigned(fDlgProc) then
+    begin
+      fDlgProc(FSelf, PAnsiChar((Sender as TControl).Name), DN_CHANGE, PtrInt((Sender as TRadioGroup).ItemIndex),0);
+    end;
+end;
+
 procedure TDialogBox.TimerTimer(Sender: TObject);
 begin
   if Assigned(fDlgProc) then
@@ -980,6 +1074,7 @@ begin
   if Assigned(fDlgProc) then
     fDlgProc(FSelf, PAnsiChar((Sender as TComponent).Name), DN_CLICK,0,0);
 end;
+
 
 end.
 

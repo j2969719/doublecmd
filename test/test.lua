@@ -1,5 +1,6 @@
 
-local my = require("doublecmd-common.lua")
+local my = require("doublecmd-common")
+local mymy = require("random-shit")
 
 lfm_data = [[
 object DialogBox: TDialogBox
@@ -59,7 +60,7 @@ function dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam)
       -- Dialogs.SendDlgMsg(Dialog, 'FileNameEdit1', my.DM_SETTEXT, text, 0)
     elseif (DlgItemName == 'MenuItem2') then
       text = Dialogs.SendDlgMsg(Dialog, 'FileNameEdit1', my.DM_GETTEXT, 0, 0)
-      Dialogs.SendDlgMsg(Dialog, 'Image1', my.DM_SETTEXT, text, 0)
+      Dialogs.SendDlgMsg(Dialog, 'Image1', mymy.DM_LOADFROMFILE, text, 0)
     elseif (DlgItemName == 'MenuItem3') then
       Dialogs.MessageBox(_VERSION, "", my.MB_OK + my.MB_ICONWARNING)
       
@@ -120,5 +121,5 @@ function dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam)
 
 end
 
-DC.LogWrite("VersionAPI "..DC.VersionAPI, my.lmsgInfo, true, false)
-Dialogs.DialogBoxLFM(debug.getinfo(1).source:sub(2):match(".*/") .. "dialog.lfm", true, "dialog_proc")
+DC.LogWrite("LuaAPI "..DC.LuaAPI.." ExtensionAPI "..DC.ExtensionAPI, my.lmsgInfo, true, false)
+Dialogs.DialogBoxLFM(debug.getinfo(1).source:sub(2):match(".*" .. SysUtils.PathDelim) .. "dialog.lfm", true, "dialog_proc")
