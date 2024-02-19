@@ -584,6 +584,42 @@ begin
   AStringList.Free;
 end;
 
+function luaMsgChoiceBox(L : Plua_State) : Integer; cdecl;
+var
+  AIndex, ACount, Args, BtnDef, BtnEsc, Ret: integer;
+  AStringList: TStringList;
+  AText, ACaption: String;
+begin
+  Result:= 1;
+  Args:= lua_gettop(L);
+  if (Args < 3) or (not lua_istable(L, 3)) then
+  begin
+    lua_pushnil(L);
+    Exit;
+  end;
+  AText:= lua_tostring(L, 1);
+  ACaption:= lua_tostring(L, 2);
+  ACount:= lua_objlen(L, 3);
+  AStringList:= TStringList.Create;
+  for AIndex := 1 to ACount do
+  begin
+    lua_rawgeti(L, 3, AIndex);
+    AStringList.Add(luaL_checkstring(L, -1));
+    lua_pop(L, 1);
+  end;
+  if (Args > 3) then
+    BtnDef:= lua_tointeger(L, 4) - 1
+  else
+    BtnDef:= -1;
+  if (Args = 5) then
+    BtnEsc:= lua_tointeger(L, 5) - 1
+  else
+    BtnEsc:= -1;
+  Ret:= uShowMsg.MsgChoiceBox(AText, ACaption, AStringList.ToStringArray, BtnDef, BtnEsc);
+  lua_pushinteger(L, Ret + 1);
+  AStringList.Free;
+end;
+
 function luaUTF8EscapeControlChars(L : Plua_State) : Integer; cdecl;
 var
   S: String;
@@ -744,26 +780,42 @@ begin
       if (Boolean(lua_toboolean(L, 4)) = True) then
         wParam := 1;
     end
-    else if (wType = LUA_TTABLE) and ((Msg = DM_SETDLGBOUNDS) or (Msg = DM_SETITEMBOUNDS))then
+    else
     begin
-      lua_getfield(L, 4, 'Left');
-      if (lua_type(L, -1) = LUA_TNUMBER) then
-        Bounds.Left:= Longint(lua_tointeger(L, -1));
-      lua_getfield(L, 4, 'Right');
-      if (lua_type(L, -1) = LUA_TNUMBER) then
-        Bounds.Right:= Longint(lua_tointeger(L, -1));
-      lua_getfield(L, 4, 'Top');
-      if (lua_type(L, -1) = LUA_TNUMBER) then
-        Bounds.Top:= Longint(lua_tointeger(L, -1));
-      lua_getfield(L, 4, 'Bottom');
-      if (lua_type(L, -1) = LUA_TNUMBER) then
-        Bounds.Bottom:= Longint(lua_tointeger(L, -1));
-      wParam:= PtrInt(@Bounds);
-    end
-    else if (Msg = DM_SETTEXT) or (Msg = DM_LISTADD) or (Msg = DM_LISTADDSTR) then
-      wParam := PtrInt(lua_tocstring(L, 4))
-    else if (wType = LUA_TNUMBER) then
-      wParam := PtrInt(lua_tointeger(L, 4));
+      case Msg of
+      DM_SETDLGBOUNDS,
+      DM_SETITEMBOUNDS:
+       begin
+         if (wType = LUA_TTABLE) then
+         begin
+           lua_getfield(L, 4, 'Left');
+           if (lua_type(L, -1) = LUA_TNUMBER) then
+             Bounds.Left:= Longint(lua_tointeger(L, -1));
+           lua_pop(L, 1);
+           lua_getfield(L, 4, 'Right');
+           if (lua_type(L, -1) = LUA_TNUMBER) then
+             Bounds.Right:= Longint(lua_tointeger(L, -1));
+           lua_pop(L, 1);
+           lua_getfield(L, 4, 'Top');
+           if (lua_type(L, -1) = LUA_TNUMBER) then
+             Bounds.Top:= Longint(lua_tointeger(L, -1));
+           lua_pop(L, 1);
+           lua_getfield(L, 4, 'Bottom');
+           if (lua_type(L, -1) = LUA_TNUMBER) then
+             Bounds.Bottom:= Longint(lua_tointeger(L, -1));
+           lua_pop(L, 1);
+
+           wParam:= PtrInt(@Bounds);
+         end;
+       end;
+      DM_SETTEXT,
+      DM_LISTADD,
+      DM_LISTADDSTR:
+       wParam := PtrInt(lua_tocstring(L, 4));
+      else if (wType = LUA_TNUMBER) then
+            wParam := PtrInt(lua_tointeger(L, 4));
+      end;
+    end;
   end;
 
   if (Msg = DM_LISTDELETE) then
@@ -802,41 +854,53 @@ begin
       if (Boolean(lua_toboolean(L, 5)) = True) then
         lParam := 1;
     end
-    else if (Msg = DM_LISTINDEXOF) or (Msg = DM_LISTINSERT) or (Msg = DM_LISTUPDATE) then
-      lParam := PtrInt(lua_tocstring(L, 4))
-    else if (lType = LUA_TNUMBER) then
-      lParam := PtrInt(lua_tointeger(L, 5));
+    else
+    begin
+      case Msg of
+      DM_LISTINDEXOF,
+      DM_LISTINSERT,
+      DM_LISTUPDATE:
+        lParam := PtrInt(lua_tocstring(L, 4));
+      else if (lType = LUA_TNUMBER) then
+        lParam := PtrInt(lua_tointeger(L, 5));
+      end;
+    end;
   end;
 
   pRet:= SendDlgMsg(pDlg, DlgItemName, Msg, wParam, lParam);
-  if (Msg = DM_ENABLE) or (Msg = DM_GETDROPPEDDOWN) or (Msg = DM_SHOWITEM) then
-  begin
-    lua_pushboolean(L, Boolean(pRet));
-  end
-  else if (Msg = DM_GETTEXT) or (Msg = DM_LISTGETITEM) then
-  begin
-    Text:= PAnsiChar(pRet);
-    lua_pushstring(L, Text);
-  end
-  else if (Msg = DM_GETITEMBOUNDS) or (Msg = DM_GETDLGBOUNDS) then
-  begin
-    Bounds:= PRect(pRet)^;
-    lua_newtable(L);
-    lua_pushinteger(L, Bounds.Left);
-    lua_setfield(L, -2, 'Left');
-    lua_pushinteger(L, Bounds.Right);
-    lua_setfield(L, -2, 'Right');
-    lua_pushinteger(L, Bounds.Top);
-    lua_setfield(L, -2, 'Top');
-    lua_pushinteger(L, Bounds.Bottom);
-    lua_setfield(L, -2, 'Bottom');
-  end
-  else if (Msg = DM_LISTGETDATA) then
-  begin
-    lua_rawgeti(L, LUA_REGISTRYINDEX, Integer(pRet));
-  end
+
+  case Msg of
+  DM_ENABLE,
+  DM_GETDROPPEDDOWN,
+  DM_SHOWITEM:
+   begin
+     lua_pushboolean(L, Boolean(pRet));
+   end;
+  DM_GETTEXT,
+  DM_LISTGETITEM:
+   begin
+     Text:= PAnsiChar(pRet);
+     lua_pushstring(L, Text);
+   end;
+  DM_GETITEMBOUNDS,
+  DM_GETDLGBOUNDS:
+   begin
+     Bounds:= PRect(pRet)^;
+     lua_newtable(L);
+     lua_pushinteger(L, Bounds.Left);
+     lua_setfield(L, -2, 'Left');
+     lua_pushinteger(L, Bounds.Right);
+     lua_setfield(L, -2, 'Right');
+     lua_pushinteger(L, Bounds.Top);
+     lua_setfield(L, -2, 'Top');
+     lua_pushinteger(L, Bounds.Bottom);
+     lua_setfield(L, -2, 'Bottom');
+   end;
+  DM_LISTGETDATA:
+   begin
+     lua_rawgeti(L, LUA_REGISTRYINDEX, Integer(pRet));
+   end;
   else
-  begin
     lua_pushinteger(L, pRet);
   end;
 end;
@@ -1058,6 +1122,7 @@ begin
     luaP_register(L, 'InputQuery', @luaInputQuery);
     luaP_register(L, 'InputListBox', @luaInputListBox);
 
+    luaP_register(L, 'MsgChoiceBox', @luaMsgChoiceBox);
     luaP_register(L, 'ParamKeyHandled', @luaDlgParamKeyHandled);
     luaP_register(L, 'ParamsToKeyStr', @luaDlgParamsToKeyStr);
     luaP_register(L, 'ParamToKeyCode', @luaDlgParamToKeyCode);

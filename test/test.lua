@@ -62,7 +62,8 @@ function dialog_proc(Dialog, DlgItemName, Msg, wParam, lParam)
       text = Dialogs.SendDlgMsg(Dialog, 'FileNameEdit1', my.DM_GETTEXT, 0, 0)
       Dialogs.SendDlgMsg(Dialog, 'Image1', mymy.DM_LOADFROMFILE, text, 0)
     elseif (DlgItemName == 'MenuItem3') then
-      Dialogs.MessageBox(_VERSION, "", my.MB_OK + my.MB_ICONWARNING)
+      --Dialogs.MessageBox(_VERSION, "", my.MB_OK + my.MB_ICONWARNING)
+      DC.LogWrite(Dialogs.MsgChoiceBox(_VERSION, "", {"oh", "shit", "msorry"}, 2, 3), my.lmsgInfo, true, false)
       
       Dialogs.DialogBoxLFM(lfm_data, false, "dialog_proc")
     elseif (DlgItemName == 'Button2') then
