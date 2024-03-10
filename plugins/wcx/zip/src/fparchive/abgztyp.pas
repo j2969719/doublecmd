@@ -21,6 +21,7 @@
  *
  * Contributor(s):
  * Craig Peterson <capeterson@users.sourceforge.net>
+ * Alexander Koblov <alexx2000@users.sourceforge.net>
  *
  * ***** END LICENSE BLOCK ***** *)
 
@@ -235,7 +236,6 @@ type
     FGZItem    : TAbArchiveList; { item in Gzip (only one, but need polymorphism of class)}
     FTarStream : TStream;        { stream for possible contained Tar }
     FTarList   : TAbArchiveList; { items in possible contained Tar }
-    FTarAutoHandle: Boolean;
     FState     : TAbGzipArchiveState;
     FIsGzippedTar : Boolean;
 
@@ -259,6 +259,8 @@ type
     procedure TestItemAt(Index : Integer);
       override;
     function FixName(const Value : string) : string;
+      override;
+    function GetStreamMode : Boolean;
       override;
     function GetSupportsEmptyFolders : Boolean;
       override;
@@ -292,7 +294,7 @@ implementation
 
 uses
   SysUtils, BufStream,
-  AbBitBkt, AbDfBase, AbDfDec, AbZlibPrc, AbExcept, AbResString, AbProgress,
+  AbBitBkt, AbDfBase, AbGz, AbZlibPrc, AbExcept, AbResString, AbProgress,
   AbVMStrm, DCOSUtils, DCClassesUtf8, DCConvertEncoding;
 
 const
@@ -897,7 +899,6 @@ begin
   FState     := gsGzip;
   FGZStream  := FStream;
   FGZItem    := FItemList;
-  FTarStream := TAbVirtualMemoryStream.Create;
   FTarList   := TAbArchiveList.Create(True);
 end;
 
@@ -1066,6 +1067,11 @@ begin
   end;
 end;
 
+function TAbGzipArchive.GetStreamMode: Boolean;
+begin
+  Result := FIsGzippedTar and (inherited GetStreamMode);
+end;
+
 function TAbGzipArchive.GetIsGzippedTar: Boolean;
 begin
   Result := FIsGzippedTar;
@@ -1107,14 +1113,23 @@ begin
         if IsGzippedTar and TarAutoHandle then begin
           { extract Tar and set stream up }
           FGzStream.Seek(0, soBeginning);
-          GzHelp.ReadHeader;
-          repeat
-            GzHelp.ExtractItemData(FTarStream);
-            GzHelp.ReadTail;
+          { Decompress and load archive on the fly }
+          if OpenMode <> opModify  then
+          begin
+            FTarStream := TGzDecompressionStream.Create(FGzStream);
+            SwapToTar;
+          end
+          else begin
+            FTarStream := TAbVirtualMemoryStream.Create;
             GzHelp.ReadHeader;
-          until not VerifyHeader(GZHelp.FItem.FGzHeader);
-          SwapToTar;
-          inherited LoadArchive;
+            repeat
+              GzHelp.ExtractItemData(FTarStream);
+              GzHelp.ReadTail;
+              GzHelp.ReadHeader;
+            until not VerifyHeader(GZHelp.FItem.FGzHeader);
+            SwapToTar;
+            inherited LoadArchive;
+          end;
         end;
       end;
 
@@ -1175,7 +1190,6 @@ begin
         CurItem.Action := aaNone;
         CurItem.LastModTimeAsDateTime := Now;
         CurItem.SaveGzHeaderToStream(NewStream);
-        FTarStream.Position := 0;
         CompStream := TDeflateStream.Create(CompressionLevel, NewStream);
         try
           FTargetStream := TWriteBufStream.Create(CompStream, $40000);
