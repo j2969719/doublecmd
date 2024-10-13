@@ -9,6 +9,7 @@ uses
   uMultiArchiveParser;
 
 type
+  TOnAddLine = procedure(line: String) of object;
 
   { TOutputParser }
 
@@ -19,6 +20,7 @@ type
     FParser: TMultiArchiveParser;
     FErrorLevel: LongInt;
     FOpenError: Boolean;
+    FOnAddLine: TOnAddLine;
     FConvertEncoding: function (const Source: String): RawByteString;
   private
     FArchiveName: String;
@@ -40,6 +42,7 @@ type
     property OpenError: Boolean read FOpenError;
     property Password: String read FPassword write FPassword;
     property OnGetArchiveItem: TOnGetArchiveItem write SetOnGetArchiveItem;
+    property OnAddLine: TOnAddLine write FOnAddLine;
   end;
 
 function ExtractErrorLevel(var Command: String): LongInt;
@@ -120,13 +123,18 @@ begin
   begin
     for I := 0 to FMultiArcItem.FIgnoreString.Count - 1 do
     begin
-    if CheckOut(FMultiArcItem.FIgnoreString[I], Str) then
-       begin
-         IgnoreString := True;
-         break;
-       end;
+      if CheckOut(FMultiArcItem.FIgnoreString[I], Str) then
+      begin
+       IgnoreString := True;
+       break;
+      end;
     end;
-    if not IgnoreString then FParser.AddLine(Str);
+    if not IgnoreString then
+    begin
+      FParser.AddLine(Str);
+      if Assigned(FOnAddLine) then
+        FOnAddLine(Str);
+    end;
   end
   else
   begin
