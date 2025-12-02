@@ -1343,6 +1343,37 @@ begin
   TColumnsFileView(Frame).UpdateColumnsView;
 end;
 
+function luaHasSelectedFiles(L : Plua_State) : Integer; cdecl;
+begin
+  Result:= 1;
+  Application.ProcessMessages;
+  if lua_isboolean(L, 1) and not lua_toboolean(L, 1) then
+    lua_pushboolean(L, frmMain.NotActiveFrame.HasSelectedFiles)
+  else
+    lua_pushboolean(L, frmMain.ActiveFrame.HasSelectedFiles);
+end;
+
+function luaIsFlatView(L : Plua_State) : Integer; cdecl;
+begin
+  Result:= 1;
+  Application.ProcessMessages;
+  if lua_isboolean(L, 1) and not lua_toboolean(L, 1) then
+    lua_pushboolean(L, frmMain.NotActiveFrame.FlatView)
+  else
+    lua_pushboolean(L, frmMain.ActiveFrame.FlatView);
+end;
+
+
+function luaIsLoadingFileList(L : Plua_State) : Integer; cdecl;
+begin
+  Result:= 1;
+  Application.ProcessMessages;
+  if lua_isboolean(L, 1) and not lua_toboolean(L, 1) then
+    lua_pushboolean(L, frmMain.NotActiveFrame.IsLoadingFileList)
+  else
+    lua_pushboolean(L, frmMain.ActiveFrame.IsLoadingFileList);
+end;
+
 function luaExecute(L: Plua_State): Integer; cdecl;
 begin
   Result:= 1;
@@ -1683,6 +1714,9 @@ begin
     luaP_register(L, 'GoToFile', @luaGoToFile);
 
     luaP_register(L, 'SetColumns', @luaSetColumns);
+    luaP_register(L, 'IsSelectionExists', @luaHasSelectedFiles);
+    luaP_register(L, 'IsInFlatView', @luaIsFlatView);
+    luaP_register(L, 'IsLoadingFileList', @luaIsLoadingFileList);
 
     lua_pushinteger(L, VERSION_API);
     lua_setfield(L, -2, 'LuaAPI');

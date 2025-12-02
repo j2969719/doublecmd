@@ -274,7 +274,6 @@ type
     function GetActiveDisplayFile: TDisplayFile; virtual; abstract;
     function GetWorkersThread: TFunctionThread;
     procedure InvertFileSelection(AFile: TDisplayFile; bNotify: Boolean = True);
-    function IsLoadingFileList: Boolean; inline;
     function IsVisibleToUser: Boolean;
     procedure Notify(NewNotifications: TFileViewNotifications);
     procedure PropertiesRetrieverOnUpdate(const UpdatedFile: TDisplayFile;
@@ -484,6 +483,8 @@ type
     procedure ChangePathToChild(const aFile: TFile); virtual;
 
     procedure ExecuteCommand(CommandName: String; const Params: array of String); virtual;
+
+    function IsLoadingFileList: Boolean; inline;
 
     {en
        Returns @true if at least one file is somehow selected.
