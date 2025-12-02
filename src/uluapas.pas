@@ -44,7 +44,7 @@ uses
   uFileSourceProperty, uFileSourceUtil, uFileSystemFileSource,
   uDefaultFilePropertyFormatter, DCDateTimeUtils, uShellExecute,
   fDialogBox, Extension, uExtension, LCLProc, Types, uGlobsPaths,
-  uFileView, uColumnsFileView, uColumns, Graphics;
+  uFileView, uColumnsFileView, uColumns, Graphics, uOperationsManager;
 
 const
   VERSION_API = 1;
@@ -1374,6 +1374,16 @@ begin
     lua_pushboolean(L, frmMain.ActiveFrame.IsLoadingFileList);
 end;
 
+function luaIsQueueAssigned(L : Plua_State) : Integer; cdecl;
+var
+  Queue: TOperationsManagerQueue;
+begin
+  Result:= 1;
+  Application.ProcessMessages;
+  Queue := OperationsManager.QueueByIdentifier[lua_tointeger(L, 1)];
+  lua_pushboolean(L, Assigned(Queue));
+end;
+
 function luaExecute(L: Plua_State): Integer; cdecl;
 begin
   Result:= 1;
@@ -1717,6 +1727,7 @@ begin
     luaP_register(L, 'IsSelectionExists', @luaHasSelectedFiles);
     luaP_register(L, 'IsInFlatView', @luaIsFlatView);
     luaP_register(L, 'IsLoadingFileList', @luaIsLoadingFileList);
+    luaP_register(L, 'IsQueueAssigned', @luaIsQueueAssigned);
 
     lua_pushinteger(L, VERSION_API);
     lua_setfield(L, -2, 'LuaAPI');
