@@ -1405,6 +1405,39 @@ begin
   end;
 end;
 
+function luaGetOutput(L : Plua_State) : Integer; cdecl;
+var
+  Process: TProcessUtf8;
+  sCommandLine: String;
+  AStringList: TStringList;
+  Start: QWord;
+  TimeOut: Integer = 5;
+begin
+  Result:= 1;
+  sCommandLine:= luaL_checkstring(L, 1);
+  if lua_isnumber(L, 2) then
+    TimeOut:= lua_tointeger(L, 2);
+  AStringList:= TStringList.Create;
+  try
+    Process:= TProcessUtf8.Create(nil);
+    Process.Options:= [poUsePipes];
+    Process.ShowWindow:= swoHide;
+    Process.CommandLine:= FormatShell(sCommandLine);
+    Process.Execute;
+    Start:= GetTickCount64;
+    while Process.Running do
+    begin
+      if (TimeOut > 0) and ((GetTickCount64 - Start) / 1000 >= TimeOut) then
+        Process.Terminate(-1);
+    end;
+  finally
+    AStringList.LoadFromStream(Process.Output);
+    Process.Free;
+  end;
+  lua_pushstring(L, AStringList.Text);
+  AStringList.Free;
+end;
+
 procedure luaP_register(L : Plua_State; n : PChar; f : lua_CFunction);
 begin
   lua_pushcfunction(L, f);
@@ -1452,6 +1485,8 @@ begin
     luaP_register(L, 'FileSetTime', @luaFileSetTime);
     luaP_register(L, 'GetFileProperty', @luaGetFileProperty);
     luaP_register(L, 'GetTempName', @luaGetTempName);
+
+    luaP_register(L, 'GetOutput', @luaGetOutput);
 
     luaC_register(L, 'PathDelim', PathDelim);
   lua_setglobal(L, 'SysUtils');
