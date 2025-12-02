@@ -43,7 +43,8 @@ uses
   DCBasicTypes, Variants, uFile, uFileProperty, uFileSource,
   uFileSourceProperty, uFileSourceUtil, uFileSystemFileSource,
   uDefaultFilePropertyFormatter, DCDateTimeUtils, uShellExecute,
-  fDialogBox, Extension, uExtension, LCLProc, Types, uGlobsPaths;
+  fDialogBox, Extension, uExtension, LCLProc, Types, uGlobsPaths,
+  uFileView, uColumnsFileView, uColumns, Graphics;
 
 const
   VERSION_API = 1;
@@ -1203,6 +1204,145 @@ begin
     frmMain.SetActiveFrame(TFilePanelSelect(lua_tointeger(L, 1)));
 end;
 
+function luaGetStringField(L : Plua_State; Field: PChar; const Default: String = ''): String;
+begin
+  Result:= Default;
+  if not lua_istable(L, -1) then
+    Exit;
+  lua_getfield(L, -1, Field);
+  if lua_type(L, -1) = LUA_TSTRING then
+    Result:= luaL_checkstring(L, -1);
+  lua_pop(L, 1);
+end;
+
+function luaGetIntField(L : Plua_State; Field: PChar; const Default: Integer = -1): Integer;
+begin
+  Result:= Default;
+  if not lua_istable(L, -1) then
+    Exit;
+  lua_getfield(L, -1, Field);
+  if lua_type(L, -1) = LUA_TNUMBER then
+    Result:= lua_tointeger(L, -1);
+  lua_pop(L, 1);
+end;
+
+function luaGetBoolField(L : Plua_State; Field: PChar; const Default: Boolean = False): Boolean;
+begin
+  Result:= Default;
+  if not lua_istable(L, -1) then
+    Exit;
+  lua_getfield(L, -1, Field);
+  if lua_type(L, -1) = LUA_TBOOLEAN then
+    Result:= lua_toboolean(L, -1);
+  lua_pop(L, 1);
+end;
+
+function luaSetColumns(L : Plua_State) : Integer; cdecl;
+var
+  I, Col, Count: Integer;
+  FntStyle: String;
+  IsActive: Boolean = True;
+  IsCustomView: Boolean = False;
+  ColumnClass: TPanelColumnsClass;
+  Frame: TFileView;
+  ColPrm: TColPrm;
+  Item: TPanelColumn;
+begin
+  Result:= 0;
+  if not lua_istable(L, 1) then
+    Exit;
+  Count:= lua_objlen(L, 1);
+  if Count < 1 then
+    Exit;
+  if lua_isboolean(L, 2) then
+    IsActive:= lua_toboolean(L, 2);
+  if lua_isboolean(L, 3) then
+    IsCustomView:= lua_toboolean(L, 3);
+  ColumnClass := TPanelColumnsClass.Create;
+  ColumnClass.CustomView:= IsCustomView;
+
+  for I := 1 to Count do
+  begin
+    lua_rawgeti(L, 1, I);
+    if lua_istable(L, -1) then
+    begin
+      lua_getfield(L, -1, 'Data');
+      if lua_type(L, -1) = LUA_TSTRING then
+      begin
+        Item:= TPanelColumn.CreateNew;
+        with Item do
+        begin
+          FuncString:= luaL_checkstring(L, -1);
+          lua_pop(L, 1);
+          Title:= luaGetStringField(L, 'Title');
+          Align:= StrToAlign(luaGetStringField(L, 'Align', '->'));
+          Width:= luaGetIntField(L, 'Width', 42);
+        end;
+        Col:= ColumnClass.Add(Item);
+        if IsCustomView then
+        begin
+          lua_getfield(L, -1, 'Custom');
+          ColPrm:= TColPrm.Create;
+          with ColPrm do
+          begin
+            FontName:= luaGetStringField(L, 'FontName', gFonts[dcfMain].Name);
+            FontSize:= luaGetIntField(L, 'FontSize', gFonts[dcfMain].Size);
+            FntStyle:= luaGetStringField(L, 'FontStyle', EmptyStr);
+            if (FntStyle <> EmptyStr) then
+            begin
+              if Pos('fsBold', FntStyle) > 0 then
+                Include(FontStyle, fsBold);
+              if Pos('fsItalic', FntStyle) > 0 then
+                Include(FontStyle, fsItalic);
+            end else
+              FontStyle:= gFonts[dcfMain].Style;
+            Background:= StringToColorDef(luaGetStringField(L, 'BackColor', EmptyStr), gColors.FilePanel^.BackColor);
+            Background2:= StringToColorDef(luaGetStringField(L, 'BackColor2', EmptyStr), gColors.FilePanel^.BackColor2);
+            TextColor:= StringToColorDef(luaGetStringField(L, 'TextColor', EmptyStr), gColors.FilePanel^.ForeColor);
+            CursorColor:= StringToColorDef(luaGetStringField(L, 'CursorColor', EmptyStr), gColors.FilePanel^.CursorColor);
+            CursorText:= StringToColorDef(luaGetStringField(L, 'CursorText', EmptyStr), gColors.FilePanel^.CursorText);
+            MarkColor:= StringToColorDef(luaGetStringField(L, 'MarkColor', EmptyStr), gColors.FilePanel^.MarkColor);
+            InactiveCursorColor:= StringToColorDef(luaGetStringField(L, 'InactiveCursorColor', EmptyStr), gColors.FilePanel^.InactiveCursorColor);
+            InactiveMarkColor:= StringToColorDef(luaGetStringField(L, 'InactiveMarkColor', EmptyStr), gColors.FilePanel^.InactiveMarkColor);
+            Overcolor:= luaGetBoolField(L, 'Overcolor', gAllowOverColor);
+            UseInactiveSelColor:= luaGetBoolField(L, 'UseInactiveSelColor', gUSeInactiveSelColor);
+            UseInvertedSelection:= luaGetBoolField(L, 'UseInvertedSelection', gUseInvertedSelection);
+          end;
+          ColumnClass.SetColumnPrm(Col, ColPrm);
+        end;
+        lua_pop(L, 1);
+      end else
+        lua_pop(L, 1);
+    end;
+    lua_pop(L, 1);
+  end;
+
+  if ColumnClass.Count < 1 then
+  begin
+    ColumnClass.Destroy;
+    Exit;
+  end;
+
+  with frmMain do
+  begin
+    if IsActive then
+      Frame:= ActiveFrame
+    else
+      Frame:= NotActiveFrame;
+    if not (Frame is TColumnsFileView) then
+    begin
+      Frame:= TColumnsFileView.Create(ActiveNotebook.ActivePage, ActiveFrame, EmptyStr);
+      if IsActive then
+        ActiveNotebook.ActivePage.FileView:= Frame
+      else
+        NotActiveNotebook.ActivePage.FileView:= Frame;
+    end;
+  end;
+  TColumnsFileView(Frame).ActiveColmSlave:= ColumnClass;
+  TColumnsFileView(Frame).isSlave:= True;
+  TColumnsFileView(Frame).UpdateColumnsView;
+end;
+
 function luaExecute(L: Plua_State): Integer; cdecl;
 begin
   Result:= 1;
@@ -1541,6 +1681,9 @@ begin
     luaP_register(L, 'ExpandVar', @luaExpandVar);
     luaP_register(L, 'GetPluginField', @luaGetPluginField);
     luaP_register(L, 'GoToFile', @luaGoToFile);
+
+    luaP_register(L, 'SetColumns', @luaSetColumns);
+
     lua_pushinteger(L, VERSION_API);
     lua_setfield(L, -2, 'LuaAPI');
     lua_pushinteger(L, uExtension.VERSION_API);
