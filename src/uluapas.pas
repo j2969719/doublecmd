@@ -44,7 +44,8 @@ uses
   uFileSourceProperty, uFileSourceUtil, uFileSystemFileSource,
   uDefaultFilePropertyFormatter, DCDateTimeUtils, uShellExecute,
   fDialogBox, Extension, uExtension, LCLProc, Types, uGlobsPaths,
-  uFileView, uColumnsFileView, uColumns, Graphics, uOperationsManager;
+  uFileView, uColumnsFileView, uColumns, Graphics, uOperationsManager,
+  Process, DCProcessUtf8;
 
 const
   VERSION_API = 1;
