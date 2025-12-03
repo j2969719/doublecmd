@@ -1758,6 +1758,8 @@ begin
     lua_setfield(L, -2, 'LuaAPI');
     lua_pushinteger(L, uExtension.VERSION_API);
     lua_setfield(L, -2, 'ExtensionAPI');
+    lua_pushstring(L, ExtractFileExt(ExtractFileNameOnly(gPOFileName)));
+    lua_setfield(L, -2, 'LanguageID');
   lua_setglobal(L, 'DC');
 
   ReplaceLibrary(L);
