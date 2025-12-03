@@ -1537,13 +1537,25 @@ begin
 end;
 
 function luaIsFlatView(L : Plua_State) : Integer; cdecl;
+var
+  IsActive: Boolean = True;
+  IsInFsProp: Boolean = False;
+  Frame: TFileView;
 begin
   Result:= 1;
   Application.ProcessMessages;
-  if lua_isboolean(L, 1) and not lua_toboolean(L, 1) then
-    lua_pushboolean(L, frmMain.NotActiveFrame.FlatView)
+  if lua_isboolean(L, 1) then
+    IsActive:= lua_toboolean(L, 1);
+  if lua_isboolean(L, 2) then
+    IsInFsProp:= lua_toboolean(L, 2);
+  if IsActive then
+    Frame:= frmMain.ActiveFrame
   else
-    lua_pushboolean(L, frmMain.ActiveFrame.FlatView);
+    Frame:= frmMain.NotActiveFrame;
+  if not IsInFsProp then
+    lua_pushboolean(L, Frame.FlatView)
+  else
+    lua_pushboolean(L, (fspListFlatView in Frame.FileSource.GetProperties));
 end;
 
 
