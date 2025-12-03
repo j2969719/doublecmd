@@ -1238,6 +1238,29 @@ begin
   lua_pop(L, 1);
 end;
 
+function luaGetColumnsInfo(L : Plua_State) : Integer; cdecl;
+var
+  Frame: TFileView;
+  AColumnClass: TPanelColumnsClass;
+begin
+  if lua_isboolean(L, 1) and not lua_toboolean(L, 1) then
+    Frame:=frmMain.NotActiveNotebook.ActiveView
+  else
+    Frame:=frmMain.ActiveNotebook.ActiveView;
+  if Frame.ClassNameIs('TColumnsFileView') then
+  begin
+    Result:= 2;
+    AColumnClass:= ColSet.GetColumnSet(TColumnsFileView(Frame).ActiveColm);
+    lua_pushstring(L, AColumnClass.Name);
+    lua_pushstring(L, AColumnClass.FileSystem);
+  end
+  else
+  begin
+    Result:= 1;
+    lua_pushnil(L);
+  end;
+end;
+
 function luaSetColumns(L : Plua_State) : Integer; cdecl;
 var
   I, Col, Count: Integer;
@@ -1724,6 +1747,7 @@ begin
     luaP_register(L, 'GetPluginField', @luaGetPluginField);
     luaP_register(L, 'GoToFile', @luaGoToFile);
 
+    luaP_register(L, 'GetColumnsInfo', @luaGetColumnsInfo);
     luaP_register(L, 'SetColumns', @luaSetColumns);
     luaP_register(L, 'IsSelectionExists', @luaHasSelectedFiles);
     luaP_register(L, 'IsInFlatView', @luaIsFlatView);
