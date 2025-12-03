@@ -1,0 +1,331 @@
+object DialogBox: TDialogBox
+  Left = 404
+  Height = 391
+  Top = 142
+  Width = 447
+  AutoSize = True
+  BorderStyle = bsDialog
+  Caption = 'Sample Text'
+  ChildSizing.LeftRightSpacing = 10
+  ChildSizing.TopBottomSpacing = 10
+  ChildSizing.HorizontalSpacing = 10
+  ChildSizing.VerticalSpacing = 10
+  ClientHeight = 391
+  ClientWidth = 447
+  KeyPreview = True
+  OnClose = DialogBoxClose
+  OnShow = DialogBoxShow
+  Position = poOwnerFormCenter
+  LCLVersion = '3.0.0.3'
+  object lbCalc: TListBox
+    AnchorSideRight.Control = Panel
+    AnchorSideRight.Side = asrBottom
+    Left = 16
+    Height = 128
+    Top = 8
+    Width = 271
+    Anchors = [akTop, akLeft, akRight]
+    BidiMode = bdRightToLeft
+    ItemHeight = 0
+    Options = []
+    ParentBidiMode = False
+    Style = lbOwnerDrawFixed
+    TabOrder = 0
+    TabStop = False
+    TopIndex = -1
+    OnDblClick = ListBoxDblClick
+    OnKeyDown = ListBoxKeyDown
+    OnKeyUp = ListBoxKeyUp
+  end
+  object lblMem: TLabel
+    AnchorSideLeft.Control = lbCalc
+    AnchorSideTop.Control = lbCalc
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = lbCalc
+    AnchorSideRight.Side = asrBottom
+    Left = 16
+    Height = 16
+    Top = 146
+    Width = 271
+    Alignment = taCenter
+    Anchors = [akTop, akLeft, akRight]
+    Caption = '0'
+    Layout = tlCenter
+  end
+  object Panel: TPanel
+    AnchorSideTop.Control = lblMem
+    AnchorSideTop.Side = asrBottom
+    Left = 16
+    Height = 162
+    Top = 172
+    Width = 271
+    AutoSize = True
+    BevelOuter = bvNone
+    ClientHeight = 162
+    ClientWidth = 271
+    TabOrder = 1
+    object gbNums: TGroupBox
+      AnchorSideTop.Side = asrBottom
+      Left = 0
+      Height = 162
+      Top = 0
+      Width = 134
+      AutoSize = True
+      ChildSizing.LeftRightSpacing = 10
+      ChildSizing.TopBottomSpacing = 10
+      ChildSizing.HorizontalSpacing = 10
+      ChildSizing.VerticalSpacing = 10
+      ChildSizing.ShrinkHorizontal = crsHomogenousChildResize
+      ChildSizing.ShrinkVertical = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 3
+      ClientHeight = 158
+      ClientWidth = 130
+      TabOrder = 0
+      object btn7: TButton
+        Left = 10
+        Height = 30
+        Top = 10
+        Width = 30
+        Caption = '7'
+        Constraints.MinHeight = 30
+        Constraints.MinWidth = 30
+        TabOrder = 0
+        OnClick = ButtonClick
+      end
+      object btn8: TButton
+        Left = 50
+        Height = 30
+        Top = 10
+        Width = 30
+        Caption = '8'
+        Constraints.MinHeight = 30
+        Constraints.MinWidth = 30
+        TabOrder = 1
+        OnClick = ButtonClick
+      end
+      object btn9: TButton
+        Left = 90
+        Height = 30
+        Top = 10
+        Width = 30
+        Caption = '9'
+        Constraints.MinHeight = 30
+        Constraints.MinWidth = 30
+        TabOrder = 2
+        OnClick = ButtonClick
+      end
+      object btn4: TButton
+        Left = 10
+        Height = 26
+        Top = 50
+        Width = 30
+        Caption = '4'
+        TabOrder = 3
+        OnClick = ButtonClick
+      end
+      object btn5: TButton
+        Left = 50
+        Height = 26
+        Top = 50
+        Width = 30
+        Caption = '5'
+        TabOrder = 4
+        OnClick = ButtonClick
+      end
+      object btn6: TButton
+        Left = 90
+        Height = 26
+        Top = 50
+        Width = 30
+        Caption = '6'
+        TabOrder = 5
+        OnClick = ButtonClick
+      end
+      object btn1: TButton
+        Left = 10
+        Height = 26
+        Top = 86
+        Width = 30
+        Caption = '1'
+        TabOrder = 6
+        OnClick = ButtonClick
+      end
+      object btn2: TButton
+        Left = 50
+        Height = 26
+        Top = 86
+        Width = 30
+        Caption = '2'
+        TabOrder = 7
+        OnClick = ButtonClick
+      end
+      object btn3: TButton
+        Left = 90
+        Height = 26
+        Top = 86
+        Width = 30
+        Caption = '3'
+        TabOrder = 8
+        OnClick = ButtonClick
+      end
+      object btn0: TButton
+        Left = 10
+        Height = 26
+        Top = 122
+        Width = 30
+        Caption = '0'
+        TabOrder = 9
+        OnClick = ButtonClick
+      end
+      object btnFloat: TButton
+        Left = 50
+        Height = 26
+        Top = 122
+        Width = 30
+        Caption = '.'
+        TabOrder = 10
+        OnClick = ButtonClick
+      end
+      object btnNegative: TButton
+        Left = 90
+        Height = 26
+        Top = 122
+        Width = 30
+        Caption = '+/-'
+        TabOrder = 11
+        OnClick = ButtonClick
+      end
+    end
+    object gbOP: TGroupBox
+      Left = 136
+      Height = 162
+      Top = 0
+      Width = 135
+      AutoSize = True
+      ChildSizing.LeftRightSpacing = 10
+      ChildSizing.TopBottomSpacing = 10
+      ChildSizing.HorizontalSpacing = 10
+      ChildSizing.VerticalSpacing = 10
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 3
+      ClientHeight = 158
+      ClientWidth = 131
+      TabOrder = 1
+      object btnPlus: TButton
+        Left = 10
+        Height = 30
+        Top = 10
+        Width = 30
+        Caption = '+'
+        Constraints.MinHeight = 30
+        Constraints.MinWidth = 30
+        TabOrder = 0
+        OnClick = ButtonClick
+      end
+      object btnPrcnt: TButton
+        Left = 50
+        Height = 30
+        Top = 10
+        Width = 31
+        Caption = '%'
+        Constraints.MinHeight = 30
+        Constraints.MinWidth = 30
+        TabOrder = 1
+        OnClick = ButtonClick
+      end
+      object btnBkSpc: TButton
+        Left = 91
+        Height = 30
+        Top = 10
+        Width = 30
+        Caption = '<-'
+        Constraints.MinHeight = 30
+        Constraints.MinWidth = 30
+        TabOrder = 2
+        OnClick = ButtonClick
+      end
+      object btnMinus: TButton
+        Left = 10
+        Height = 26
+        Top = 50
+        Width = 30
+        Caption = '-'
+        TabOrder = 3
+        OnClick = ButtonClick
+      end
+      object btnMemStore: TButton
+        Left = 50
+        Height = 26
+        Top = 50
+        Width = 31
+        Caption = 'MS'
+        TabOrder = 4
+        OnClick = ButtonClick
+      end
+      object btnClear: TButton
+        Left = 91
+        Height = 26
+        Top = 50
+        Width = 30
+        Caption = 'C'
+        TabOrder = 5
+        OnClick = ButtonClick
+      end
+      object btnMult: TButton
+        Left = 10
+        Height = 26
+        Top = 86
+        Width = 30
+        Caption = '*'
+        TabOrder = 6
+        OnClick = ButtonClick
+      end
+      object btnMemPlus: TButton
+        Left = 50
+        Height = 26
+        Top = 86
+        Width = 31
+        Caption = 'M+'
+        TabOrder = 7
+        OnClick = ButtonClick
+      end
+      object btnAllClear: TButton
+        Left = 91
+        Height = 26
+        Top = 86
+        Width = 30
+        Caption = 'AC'
+        TabOrder = 8
+        OnClick = ButtonClick
+      end
+      object btnDiv: TButton
+        Left = 10
+        Height = 26
+        Top = 122
+        Width = 30
+        Caption = '/'
+        TabOrder = 9
+        OnClick = ButtonClick
+      end
+      object btnMemRead: TButton
+        Left = 50
+        Height = 26
+        Top = 122
+        Width = 31
+        Caption = 'MR'
+        TabOrder = 10
+        OnClick = ButtonClick
+      end
+      object btnCalc: TButton
+        Left = 91
+        Height = 26
+        Top = 122
+        Width = 30
+        Caption = '='
+        TabOrder = 11
+        OnClick = ButtonClick
+      end
+    end
+  end
+end
