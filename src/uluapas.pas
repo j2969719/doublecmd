@@ -45,7 +45,7 @@ uses
   uDefaultFilePropertyFormatter, DCDateTimeUtils, uShellExecute,
   fDialogBox, Extension, uExtension, LCLProc, Types, uGlobsPaths,
   uFileView, uColumnsFileView, uColumns, Graphics, uOperationsManager,
-  Process, DCProcessUtf8;
+  Process, DCProcessUtf8, uDisplayFile;
 
 const
   VERSION_API = 1;
@@ -1238,6 +1238,165 @@ begin
   lua_pop(L, 1);
 end;
 
+function luaMarkFilesInPanel(L : Plua_State) : Integer; cdecl;
+var
+  IsMarked: Boolean = False;
+  IsActive: Boolean = True;
+  StringList: TStringList;
+  aFiles: TDisplayFiles;
+  I, P, Count: Integer;
+  Frame: TFileView;
+begin
+  Result:= 1;
+  if not lua_istable(L, 1) then
+  begin
+    lua_pushboolean(L, IsMarked);
+    Exit;
+  end;
+  if lua_isboolean(L, 2) then
+    IsActive:= lua_toboolean(L, 2);
+  Count:= lua_objlen(L, 1);
+  StringList:= TStringList.Create;
+  StringList.Sorted:= True;
+  for I := 1 to Count do
+  begin
+    lua_rawgeti(L, 1, I);
+    StringList.Add(luaL_checkstring(L, -1));
+    lua_pop(L, 1);
+  end;
+  if not IsActive then
+    Frame:=frmMain.NotActiveNotebook.ActiveView
+  else
+    Frame:=frmMain.ActiveNotebook.ActiveView;
+  aFiles:= Frame.DisplayFiles;
+  try
+    for I:= 0 to aFiles.Count - 1 do
+    begin
+      if StringList.Find(aFiles[I].FSFile.Name, P) then
+      begin
+        Frame.MarkFile(aFiles[I], True);
+        IsMarked:= True;
+      end;
+    end;
+  except
+  end;
+  lua_pushboolean(L, IsMarked);
+end;
+
+function luaFilesInPanel(L : Plua_State) : Integer; cdecl;
+const
+  FieldCount = 16;
+var
+  I: Integer;
+  aFile: TFile;
+  aFiles: TFiles;
+  IsActive: Boolean = True;
+  IsAllFiles: Boolean = True;
+  Frame: TFileView;
+begin
+  Result:= 1;
+  if lua_isboolean(L, 1) then
+    IsActive:= lua_toboolean(L, 1);
+  if lua_isboolean(L, 2) then
+    IsAllFiles:= lua_toboolean(L, 2);
+  if not IsActive then
+    Frame:=frmMain.NotActiveNotebook.ActiveView
+  else
+    Frame:=frmMain.ActiveNotebook.ActiveView;
+  if IsAllFiles then
+    aFiles:= Frame.CloneFiles
+  else
+    aFiles:= Frame.CloneSelectedFiles;
+
+  try
+    lua_createtable(L, aFiles.Count, 0);
+    for I:= 0 to aFiles.Count - 1 do
+    begin
+      aFile:= aFiles[I];
+      lua_createtable(L, FieldCount, 0);
+
+      lua_pushstring(L, aFile.FullPath);
+      lua_setfield(L, -2, 'FullPath');
+      lua_pushstring(L, aFile.Name);
+      lua_setfield(L, -2, 'Name');
+
+      if (fpAttributes in aFile.SupportedProperties) then
+        lua_pushstring(L, aFile.AttributesProperty.AsString)
+      else
+        lua_pushstring(L, EmptyStr);
+      lua_setfield(L, -2, 'Attributes');
+
+      lua_pushboolean(L, aFile.IsDirectory);
+      lua_setfield(L, -2, 'IsDirectory');
+      lua_pushboolean(L, aFile.IsExecutable);
+      lua_setfield(L, -2, 'IsExecutable');
+      lua_pushboolean(L, aFile.IsSpecial);
+      lua_setfield(L, -2, 'IsSpecial');
+
+      if (fpLink in aFile.SupportedProperties) then
+      begin
+        lua_pushboolean(L, aFile.IsLink);
+        lua_setfield(L, -2, 'IsLink');
+        lua_pushboolean(L, aFile.IsLinkToDirectory);
+        lua_setfield(L, -2, 'IsLinkToDirectory');
+        lua_pushstring(L, aFile.LinkProperty.LinkTo);
+        lua_setfield(L, -2, 'LinkTo');
+      end
+      else
+      begin
+        lua_pushboolean(L, False);
+        lua_setfield(L, -2, 'IsLink');
+        lua_pushboolean(L, False);
+        lua_setfield(L, -2, 'IsLinkToDirectory');
+        lua_pushstring(L, EmptyStr);
+        lua_setfield(L, -2, 'LinkTo');
+      end;
+
+      if (fpSize in aFile.SupportedProperties) and aFile.SizeProperty.IsValid then
+        lua_pushnumber(L, aFile.Size)
+      else
+        lua_pushnumber(L, -1);
+      lua_setfield(L, -2, 'Size');
+      if (fpCompressedSize in aFile.SupportedProperties) and aFile.CompressedSizeProperty.IsValid then
+        lua_pushnumber(L, aFile.CompressedSize)
+      else
+        lua_pushnumber(L, -1);
+      lua_setfield(L, -2, 'CompressedSize');
+
+      if (fpModificationTime in aFile.SupportedProperties) and aFile.ModificationTimeProperty.IsValid then
+        lua_pushnumber(L, DateTimeToUnixFileTime(aFile.ModificationTime))
+      else
+        lua_pushnumber(L, -1);
+      lua_setfield(L, -2, 'ModificationTime');
+      if (fpCreationTime in aFile.SupportedProperties) and aFile.CreationTimeProperty.IsValid then
+        lua_pushnumber(L, DateTimeToUnixFileTime(aFile.CreationTime))
+      else
+        lua_pushnumber(L, -1);
+      lua_setfield(L, -2, 'CreationTime');
+      if (fpChangeTime in aFile.SupportedProperties) and aFile.ChangeTimeProperty.IsValid then
+        lua_pushnumber(L, DateTimeToUnixFileTime(aFile.ChangeTime))
+      else
+        lua_pushnumber(L, -1);
+      lua_setfield(L, -2, 'ChangeTime');
+
+      if (fpType in aFile.SupportedProperties) then
+        lua_pushstring(L, aFile.FileType)
+      else
+        lua_pushstring(L, EmptyStr);
+      lua_setfield(L, -2, 'FileType');
+      if (fpComment in aFile.SupportedProperties) then
+        lua_pushstring(L, aFile.CommentProperty.Value)
+      else
+        lua_pushstring(L, EmptyStr);
+      lua_setfield(L, -2, 'Comment');
+
+      lua_rawseti(L, -2, I + 1);
+    end;
+  finally
+    aFiles.Free;
+  end;
+end;
+
 function luaGetColumnsInfo(L : Plua_State) : Integer; cdecl;
 var
   Frame: TFileView;
@@ -1753,6 +1912,8 @@ begin
     luaP_register(L, 'IsInFlatView', @luaIsFlatView);
     luaP_register(L, 'IsLoadingFileList', @luaIsLoadingFileList);
     luaP_register(L, 'IsQueueAssigned', @luaIsQueueAssigned);
+    luaP_register(L, 'FilesInPanel', @luaFilesInPanel);
+    luaP_register(L, 'MarkFilesInPanel', @luaMarkFilesInPanel);
 
     lua_pushinteger(L, VERSION_API);
     lua_setfield(L, -2, 'LuaAPI');
