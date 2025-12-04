@@ -12,13 +12,21 @@ cols = {
   {Title = "comment", Data = "[DC().GETFILECOMMENT{}]", Width = 300, Align = "<-"},
 }
 
-name, fs = DC.GetColumnsInfo()
+colsets, current, fs = DC.GetColumnSets()
 
-if name then
+DC.LogWrite(tostring(colsets))
+
+if colsets then
+  for i = 1, #colsets do
+    DC.LogWrite(colsets[i])
+  end
+end
+
+if current then
   if fs then
     DC.LogWrite("fs = " ..fs)
   end
-  DC.LogWrite("name = " ..name)
+  DC.LogWrite("name = " ..current)
 else
   DC.LogWrite("FICKUZ", dc.lmsgSuccess)
 end
@@ -29,14 +37,13 @@ custom_view = true
 
 DC.SetColumns(cols, active_panel, custom_view)
 
-DC.LogWrite("FAIL HERE")
-name, fs = DC.GetColumnsInfo()
+_, current, fs = DC.GetColumnSets(active_panel)
 
-if name then
+if current then
   if fs then
-    DC.LogWrite("fs = " ..fs, dc.lmsgError)
+    DC.LogWrite("fs = " ..fs)
   end
-  DC.LogWrite("name = " ..name, dc.lmsgError)
+  DC.LogWrite("name = " ..current)
 else
-  DC.LogWrite("FICKUZ", dc.lmsgError)
+  DC.LogWrite("FICKUZ", dc.lmsgSuccess)
 end
