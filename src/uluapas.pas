@@ -1245,7 +1245,7 @@ var
   IsFullPaths: Boolean = False;
   StringList: TStringList;
   aFiles: TDisplayFiles;
-  I, P, Count: Integer;
+  I, P, Count: LongInt;
   Frame: TFileView;
   Needle: String;
 begin
@@ -1261,19 +1261,21 @@ begin
     IsFullPaths:= lua_toboolean(L, 3);
   Count:= lua_objlen(L, 1);
   StringList:= TStringList.Create;
+  StringList.CaseSensitive:= FileNameCaseSensitive;
   StringList.Sorted:= True;
-  for I := 1 to Count do
-  begin
-    lua_rawgeti(L, 1, I);
-    StringList.Add(luaL_checkstring(L, -1));
-    lua_pop(L, 1);
-  end;
-  if not IsActive then
-    Frame:=frmMain.NotActiveNotebook.ActiveView
-  else
-    Frame:=frmMain.ActiveNotebook.ActiveView;
-  aFiles:= Frame.DisplayFiles;
   try
+    for I := 1 to Count do
+    begin
+      lua_rawgeti(L, 1, I);
+      StringList.Add(luaL_checkstring(L, -1));
+      lua_pop(L, 1);
+    end;
+    if not IsActive then
+      Frame:=frmMain.NotActiveNotebook.ActiveView
+    else
+      Frame:=frmMain.ActiveNotebook.ActiveView;
+    aFiles:= Frame.DisplayFiles;
+
     for I:= 0 to aFiles.Count - 1 do
     begin
       if not IsFullPaths then
@@ -1286,7 +1288,8 @@ begin
         IsMarked:= True;
       end;
     end;
-  except
+  finally
+    StringList.Free;
   end;
   lua_pushboolean(L, IsMarked);
 end;
