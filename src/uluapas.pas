@@ -1242,10 +1242,12 @@ function luaMarkFilesInPanel(L : Plua_State) : Integer; cdecl;
 var
   IsMarked: Boolean = False;
   IsActive: Boolean = True;
+  IsFullPaths: Boolean = False;
   StringList: TStringList;
   aFiles: TDisplayFiles;
   I, P, Count: Integer;
   Frame: TFileView;
+  Needle: String;
 begin
   Result:= 1;
   if not lua_istable(L, 1) then
@@ -1255,6 +1257,8 @@ begin
   end;
   if lua_isboolean(L, 2) then
     IsActive:= lua_toboolean(L, 2);
+  if lua_isboolean(L, 3) then
+    IsFullPaths:= lua_toboolean(L, 3);
   Count:= lua_objlen(L, 1);
   StringList:= TStringList.Create;
   StringList.Sorted:= True;
@@ -1272,7 +1276,11 @@ begin
   try
     for I:= 0 to aFiles.Count - 1 do
     begin
-      if StringList.Find(aFiles[I].FSFile.Name, P) then
+      if not IsFullPaths then
+        Needle:= aFiles[I].FSFile.Name
+      else
+        Needle:= aFiles[I].FSFile.FullPath;
+      if StringList.Find(Needle, P) then
       begin
         Frame.MarkFile(aFiles[I], True);
         IsMarked:= True;

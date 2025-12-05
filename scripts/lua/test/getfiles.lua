@@ -15,3 +15,9 @@ end
 files = { "getfiles.lua", "checks.lua" }
 
 DC.LogWrite("DC.MarkFilesInPanel(files, is_active) = "..tostring(DC.MarkFilesInPanel(files, is_active)))
+
+
+is_paths = true
+files = { SysUtils.ExtractFilePath(os.getenv('COMMANDER_EXE')) .. 'scripts/lua/test/flatview.lua'}
+
+DC.LogWrite("DC.MarkFilesInPanel({"..files[1].."}, is_active="..tostring(is_active)..", is_paths="..tostring(is_paths)..") = "..tostring(DC.MarkFilesInPanel(files, is_active, is_paths)))
