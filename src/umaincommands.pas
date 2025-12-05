@@ -5676,7 +5676,15 @@ end;
 
 procedure TMainCommands.cm_AbortListLoad(const Params: array of string);
 begin
-  frmMain.ActiveFrame.ExecuteCommand('cm_AbortListLoad', []);
+  if (Length(Params) > 0) and (Pos('inactive', Params[0]) <> 0)then
+    frmMain.NotActiveFrame.ExecuteCommand('cm_AbortListLoad', [])
+  else if (Length(Params) > 0) and (Pos('both', Params[0]) <> 0)then
+  begin
+    frmMain.ActiveFrame.ExecuteCommand('cm_AbortListLoad', []);
+    frmMain.NotActiveFrame.ExecuteCommand('cm_AbortListLoad', []);
+  end
+  else
+    frmMain.ActiveFrame.ExecuteCommand('cm_AbortListLoad', []);
 end;
 
 procedure TMainCommands.cm_SetSortMode(const Params: array of string);
