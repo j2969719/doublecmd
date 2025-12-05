@@ -2482,6 +2482,12 @@ object frmMain: TfrmMain
       Caption = 'Open Drive by Index'
       OnExecute = actExecute
     end
+    object actAbortListLoad: TAction
+      Tag = 14
+      Category = 'Navigation'
+      Caption = 'Abort loading the list'
+      OnExecute = actExecute
+    end
     object actOpenBar: TAction
       Tag = 16
       Category = 'Window'

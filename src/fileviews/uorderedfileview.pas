@@ -116,6 +116,7 @@ type
     procedure cm_GoToPrevEntry(const {%H-}Params: array of string);
     procedure cm_GoToFirstFile(const Params: array of string);
     procedure cm_GoToLastFile(const Params: array of string);
+    procedure cm_AbortListLoad(const Params: array of string);
   end;
 
 implementation
@@ -167,6 +168,15 @@ begin
       Self.quickSearch.CloneTo(quickSearch);
       FFocusQuickSearch := Self.quickSearch.edtSearch.Focused;
     end;
+  end;
+end;
+
+procedure TOrderedFileView.cm_AbortListLoad(const Params: array of string);
+begin
+  if IsLoadingFileList then
+  begin
+    StopWorkers;
+    CancelLastPathChange;
   end;
 end;
 

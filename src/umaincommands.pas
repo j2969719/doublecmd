@@ -385,6 +385,7 @@ type
    procedure cm_OpenDriveByIndex(const Params: array of string);
    procedure cm_AddPlugin(const Params: array of string);
    procedure cm_LoadList(const Params: array of string);
+   procedure cm_AbortListLoad(const Params: array of string);
    procedure cm_SetSortMode(const Params: array of string);
 
    // Internal commands
@@ -5671,6 +5672,11 @@ begin
     end;
     StringList.Free;
   end;
+end;
+
+procedure TMainCommands.cm_AbortListLoad(const Params: array of string);
+begin
+  frmMain.ActiveFrame.ExecuteCommand('cm_AbortListLoad', []);
 end;
 
 procedure TMainCommands.cm_SetSortMode(const Params: array of string);
