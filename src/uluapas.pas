@@ -1598,6 +1598,46 @@ begin
   lua_pushboolean(L, Assigned(Queue));
 end;
 
+function luaIsQueuePaused(L : Plua_State) : Integer; cdecl;
+var
+  Queue: TOperationsManagerQueue;
+begin
+  Result:= 1;
+  Application.ProcessMessages;
+  Queue := OperationsManager.QueueByIdentifier[lua_tointeger(L, 1)];
+  lua_pushboolean(L, (Assigned(Queue) and Queue.Paused));
+end;
+
+function luaPauseQueue(L : Plua_State) : Integer; cdecl;
+var
+  IsPause: Boolean = True;
+  Queue: TOperationsManagerQueue;
+begin
+  Result:= 0;
+  Application.ProcessMessages;
+  Queue := OperationsManager.QueueByIdentifier[lua_tointeger(L, 1)];
+  if lua_isboolean(L, 2) then
+    IsPause:= lua_toboolean(L, 2);
+  if Assigned(Queue) then
+  begin
+    if IsPause then
+      Queue.Pause
+    else
+      Queue.UnPause;
+  end
+end;
+
+function luaStopQueue(L : Plua_State) : Integer; cdecl;
+var
+  Queue: TOperationsManagerQueue;
+begin
+  Result:= 0;
+  Application.ProcessMessages;
+  Queue := OperationsManager.QueueByIdentifier[lua_tointeger(L, 1)];
+  if Assigned(Queue) then
+      Queue.Stop;
+end;
+
 function luaExecute(L: Plua_State): Integer; cdecl;
 begin
   Result:= 1;
@@ -1943,6 +1983,9 @@ begin
     luaP_register(L, 'IsInFlatView', @luaIsFlatView);
     luaP_register(L, 'IsLoadingFileList', @luaIsLoadingFileList);
     luaP_register(L, 'IsQueueAssigned', @luaIsQueueAssigned);
+    luaP_register(L, 'IsQueuePaused', @luaIsQueuePaused);
+    luaP_register(L, 'PauseQueue', @luaPauseQueue);
+    luaP_register(L, 'StopQueue', @luaStopQueue);
     luaP_register(L, 'FilesInPanel', @luaFilesInPanel);
     luaP_register(L, 'MarkFilesInPanel', @luaMarkFilesInPanel);
 
