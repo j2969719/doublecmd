@@ -1,7 +1,7 @@
 
 is_active = true
 is_allfiles = not DC.IsSelectionExists(is_acive)
-files = DC.FilesInPanel(is_active, is_allfiles)
+files = DC.GetFilesInPanel(is_active, is_allfiles)
 DC.LogWrite(tostring(files).. ' #files= ' ..#files )
 for i= 1, #files do
   local text = ''

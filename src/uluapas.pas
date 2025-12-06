@@ -45,7 +45,7 @@ uses
   uDefaultFilePropertyFormatter, DCDateTimeUtils, uShellExecute,
   fDialogBox, Extension, uExtension, LCLProc, Types, uGlobsPaths,
   uFileView, uColumnsFileView, uColumns, Graphics, uOperationsManager,
-  Process, DCProcessUtf8, uDisplayFile;
+  Process, DCProcessUtf8, uDisplayFile, uFileViewNotebook, uDrive;
 
 const
   VERSION_API = 1;
@@ -1298,7 +1298,7 @@ function luaFilesInPanel(L : Plua_State) : Integer; cdecl;
 const
   FieldCount = 16;
 var
-  I: Integer;
+  I: LongInt;
   aFile: TFile;
   aFiles: TFiles;
   IsActive: Boolean = True;
@@ -1405,6 +1405,104 @@ begin
     end;
   finally
     aFiles.Free;
+  end;
+end;
+
+function luaGetDrives(L : Plua_State) : Integer; cdecl;
+const
+  FieldCount = 12;
+var
+  I: LongInt;
+  Drive: TDrive;
+begin
+  Result:= 1;
+  lua_createtable(L, frmMain.Drives.Count, 0);
+  for I:= 0 to frmMain.Drives.Count - 1 do
+  begin
+    lua_createtable(L, FieldCount, 0);
+    lua_pushnumber(L, I);
+    lua_setfield(L, -2, 'DriveIndex');
+    Drive:= frmMain.Drives.Items[I]^;
+    lua_pushstring(L, Drive.DisplayName);
+    lua_setfield(L, -2, 'DisplayName');
+    lua_pushstring(L, Drive.DriveLabel);
+    lua_setfield(L, -2, 'DriveLabel');
+    lua_pushstring(L, Drive.FileSystem);
+    lua_setfield(L, -2, 'FileSystem');
+    lua_pushstring(L, Drive.Path);
+    lua_setfield(L, -2, 'Path');
+    lua_pushstring(L, Drive.DeviceId);
+    lua_setfield(L, -2, 'DeviceId');
+    case Drive.DriveType of
+      dtFlash: lua_pushstring(L, 'Flash');
+      dtFloppy: lua_pushstring(L, 'Floppy');
+      dtHardDisk: lua_pushstring(L, 'HardDisk');
+      dtNetwork: lua_pushstring(L, 'Network');
+      dtOptical: lua_pushstring(L, 'Optical');
+      dtRamDisk: lua_pushstring(L, 'RamDisk');
+      dtRemovable: lua_pushstring(L, 'Removable');
+      dtRemovableUsb: lua_pushstring(L, 'RemovableUsb');
+      dtSpecial: lua_pushstring(L, 'Special');
+      else
+        lua_pushstring(L, 'Unknown');
+    end;
+    lua_setfield(L, -2, 'DriveType');
+
+    lua_pushnumber(L, Drive.DriveSize);
+    lua_setfield(L, -2, 'DriveSize');
+    lua_pushboolean(L, Drive.IsMounted);
+    lua_setfield(L, -2, 'IsMounted');
+    lua_pushboolean(L, Drive.IsMediaAvailable);
+    lua_setfield(L, -2, 'IsMediaAvailable');
+    lua_pushboolean(L, Drive.IsMediaEjectable);
+    lua_setfield(L, -2, 'IsMediaEjectable');
+    lua_pushboolean(L, Drive.IsMediaRemovable);
+    lua_setfield(L, -2, 'IsMediaRemovable');
+
+    lua_rawseti(L, -2, I + 1);
+  end;
+end;
+
+function luaTabsInPanel(L : Plua_State) : Integer; cdecl;
+const
+  FieldCount = 7;
+var
+  I: LongInt;
+  Notebook: TFileViewNotebook;
+begin
+  Result:= 1;
+  if lua_isboolean(L, 1) and not lua_toboolean(L, 1) then
+    Notebook:=frmMain.NotActiveNotebook
+  else
+    Notebook:=frmMain.ActiveNotebook;
+  lua_createtable(L, Notebook.PageCount, 0);
+  for I:= 0 to Notebook.PageCount - 1 do
+  begin
+    lua_createtable(L, FieldCount, 0);
+    lua_pushnumber(L, Notebook.Page[I].TabIndex);
+    lua_setfield(L, -2, 'TabIndex');
+    lua_pushstring(L, Notebook.Page[I].CurrentTitle);
+    lua_setfield(L, -2, 'Title');
+    lua_pushstring(L, Notebook.Page[I].FileView.CurrentPath);
+    lua_setfield(L, -2, 'Path');
+    lua_pushstring(L, Notebook.Page[I].FileView.CurrentAddress);
+    lua_setfield(L, -2, 'Address');
+    lua_pushstring(L, Notebook.Page[I].LockPath);
+    lua_setfield(L, -2, 'LockPath');
+    case Notebook.Page[I].LockState of
+      tlsNormal: lua_pushstring(L, 'Normal');
+      tlsPathLocked: lua_pushstring(L, 'PathLocked');
+      tlsPathResets: lua_pushstring(L, 'PathResets');
+      tlsDirsInNewTab: lua_pushstring(L, 'DirsInNewTab');
+      else
+        lua_pushstring(L, 'Unknown');
+    end;
+    lua_setfield(L, -2, 'LockState');
+
+    lua_pushboolean(L, Notebook.Page[I].IsActive);
+    lua_setfield(L, -2, 'IsActive');
+
+    lua_rawseti(L, -2, I + 1);
   end;
 end;
 
@@ -1989,7 +2087,9 @@ begin
     luaP_register(L, 'IsQueuePaused', @luaIsQueuePaused);
     luaP_register(L, 'PauseQueue', @luaPauseQueue);
     luaP_register(L, 'StopQueue', @luaStopQueue);
-    luaP_register(L, 'FilesInPanel', @luaFilesInPanel);
+    luaP_register(L, 'GetDrives', @luaGetDrives);
+    luaP_register(L, 'GetTabsInPanel', @luaTabsInPanel);
+    luaP_register(L, 'GetFilesInPanel', @luaFilesInPanel);
     luaP_register(L, 'MarkFilesInPanel', @luaMarkFilesInPanel);
 
     lua_pushinteger(L, VERSION_API);
