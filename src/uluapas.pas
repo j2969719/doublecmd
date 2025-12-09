@@ -1166,6 +1166,8 @@ begin
   if lua_isboolean(L, 4) then
     bLogFile:= lua_toboolean(L, 4);
   logWrite(sText, LogMsgType, bForce, bLogFile);
+  if GetCurrentThreadID = MainThreadID then
+    Application.ProcessMessages;
 end;
 
 function luaExecuteCommand(L : Plua_State) : Integer; cdecl;
@@ -1177,6 +1179,11 @@ var
   Res: TCommandFuncResult;
 begin
   Result:= 1;
+  if GetCurrentThreadID <> MainThreadID then
+  begin
+    lua_pushnil(L);
+    Exit;
+  end;
   Res:= cfrNotFound;
   Count:= lua_gettop(L);
   if Count > 0 then
@@ -1649,7 +1656,8 @@ end;
 function luaHasSelectedFiles(L : Plua_State) : Integer; cdecl;
 begin
   Result:= 1;
-  Application.ProcessMessages;
+  if GetCurrentThreadID = MainThreadID then
+    Application.ProcessMessages;
   if lua_isboolean(L, 1) and not lua_toboolean(L, 1) then
     lua_pushboolean(L, frmMain.NotActiveFrame.HasSelectedFiles)
   else
@@ -1663,7 +1671,8 @@ var
   Frame: TFileView;
 begin
   Result:= 1;
-  Application.ProcessMessages;
+  if GetCurrentThreadID = MainThreadID then
+    Application.ProcessMessages;
   if lua_isboolean(L, 1) then
     IsActive:= lua_toboolean(L, 1);
   if lua_isboolean(L, 2) then
@@ -1682,7 +1691,8 @@ end;
 function luaIsLoadingFileList(L : Plua_State) : Integer; cdecl;
 begin
   Result:= 1;
-  Application.ProcessMessages;
+  if GetCurrentThreadID = MainThreadID then
+    Application.ProcessMessages;
   if lua_isboolean(L, 1) and not lua_toboolean(L, 1) then
     lua_pushboolean(L, frmMain.NotActiveFrame.IsLoadingFileList)
   else
@@ -1694,7 +1704,8 @@ var
   Queue: TOperationsManagerQueue;
 begin
   Result:= 1;
-  Application.ProcessMessages;
+  if GetCurrentThreadID = MainThreadID then
+    Application.ProcessMessages;
   Queue := OperationsManager.QueueByIdentifier[lua_tointeger(L, 1)];
   lua_pushboolean(L, Assigned(Queue));
 end;
@@ -1704,7 +1715,8 @@ var
   Queue: TOperationsManagerQueue;
 begin
   Result:= 1;
-  Application.ProcessMessages;
+  if GetCurrentThreadID = MainThreadID then
+    Application.ProcessMessages;
   Queue := OperationsManager.QueueByIdentifier[lua_tointeger(L, 1)];
   lua_pushboolean(L, (Assigned(Queue) and Queue.Paused));
 end;
@@ -1715,7 +1727,8 @@ var
   Queue: TOperationsManagerQueue;
 begin
   Result:= 0;
-  Application.ProcessMessages;
+  if GetCurrentThreadID = MainThreadID then
+    Application.ProcessMessages;
   Queue := OperationsManager.QueueByIdentifier[lua_tointeger(L, 1)];
   if lua_isboolean(L, 2) then
     IsPause:= lua_toboolean(L, 2);
@@ -1733,7 +1746,8 @@ var
   Queue: TOperationsManagerQueue;
 begin
   Result:= 0;
-  Application.ProcessMessages;
+  if GetCurrentThreadID = MainThreadID then
+    Application.ProcessMessages;
   Queue := OperationsManager.QueueByIdentifier[lua_tointeger(L, 1)];
   if Assigned(Queue) then
       Queue.Stop;
