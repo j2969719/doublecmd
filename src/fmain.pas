@@ -686,6 +686,9 @@ type
     procedure seLogWindowSpecialLineColors(Sender: TObject; Line: integer;
       var Special: boolean; var FG, BG: TColor);
 
+    procedure CloseActiveTabAsync(Data: PtrInt);
+    procedure CloseActiveTab;
+
     procedure FileViewFreeAsync(Data: PtrInt);
     function FileViewAutoSwitch(FileSource: IFileSource; var FileView: TFileView; Reason: TChangePathReason; const NewPath: String): Boolean;
     function FileViewBeforeChangePath(FileView: TFileView; NewFileSource: IFileSource; Reason: TChangePathReason; const NewPath : String): Boolean;
@@ -899,7 +902,6 @@ type
     procedure OnNSServiceOpenWithNewTab( filenames:TStringList );
     function NSServiceMenuIsReady(): boolean;
     function NSServiceMenuGetFilenames(): TStringArray;
-    procedure NSThemeChangedHandler();
     {$ENDIF}
     procedure LoadWindowState;
     procedure SaveWindowState;
@@ -1261,7 +1263,6 @@ begin
 
 {$IF DEFINED(DARWIN)}
   TDarwinApplicationUtil.initServiceProvider( @OnNSServiceOpenWithNewTab, @NSServiceMenuIsReady, @NSServiceMenuGetFilenames );
-  TDarwinApplicationUtil.addThemeObserver( @NSThemeChangedHandler );
   TDarwinFileViewUtil.init( @ActiveNotebook, @ActiveFrame );
 {$ENDIF}
 end;
@@ -4545,6 +4546,20 @@ begin
   end;
 end;
 
+procedure TfrmMain.CloseActiveTabAsync(Data: PtrInt);
+begin
+  commands.DoCloseTab(ActiveNotebook, ActiveNotebook.PageIndex);
+end;
+
+procedure TfrmMain.CloseActiveTab;
+begin
+  // neither LCL nor WidgetSet prefers the App to destroy components during event handling.
+  // if DC closes the tab during event handling, LCL will output the following warning:
+  // WARNING: TDrawGridEx.Destroy with LCLRefCount>0. Hint: Maybe the component is processing an event?
+  // some WidgetSets may even cause unpredictable issues due to dangling references.
+  Application.QueueAsyncCall(@CloseActiveTabAsync, 0);
+end;
+
 procedure TfrmMain.FileViewFreeAsync(Data: PtrInt);
 var
   FileView: TFileView absolute Data;
@@ -5153,14 +5168,8 @@ begin
     FileViewFlags := [fvfDelayLoadingFiles];
   if sType = 'columns' then begin
     Result := TColumnsFileView.Create(Page, AConfig, ANode, FileViewFlags);
-    {$IFDEF DARWIN}
-    TColumnsFileView(Result).OnDrawCell:= @darwinFileViewDrawHandler.OnDrawCell;
-    {$ENDIF}
   end else if sType = 'brief' then begin
     Result := TBriefFileView.Create(Page, AConfig, ANode, FileViewFlags);
-    {$IFDEF DARWIN}
-    TBriefFileView(Result).OnDrawCell:= @darwinFileViewDrawHandler.OnDrawCell;
-    {$ENDIF}
   end else if sType = 'thumbnails' then
     Result := TThumbFileView.Create(Page, AConfig, ANode, FileViewFlags)
   else begin
@@ -6407,11 +6416,6 @@ begin
 
   FreeAndNil( files );
   Result:= filenames;
-end;
-
-procedure TfrmMain.NSThemeChangedHandler;
-begin
-  ThemeServices.IntfDoOnThemeChange;
 end;
 {$ENDIF}
 

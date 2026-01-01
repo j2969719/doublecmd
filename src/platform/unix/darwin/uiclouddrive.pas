@@ -12,10 +12,10 @@ uses
   uFile, uDisplayFile,
   uFileSource, uFileSourceOperationTypes, uFileSourceManager,
   uFileSourceWatcher, uMountedFileSource, uVfsModule,
-  uDCUtils, uLng, uGlobs,
-  uDarwinApplication, uDarwinFSWatch, uDarwinSimpleFSWatch,
-  uDarwinFile, uDarwinImage,
-  CocoaAll, CocoaUtils;
+  uDCUtils, uLng,
+  uDarwinFSWatch, uDarwinSimpleFSWatch, uDarwinDC,
+  uDarwinFile, uDarwinImage, uDarwinUtil,
+  CocoaAll, CocoaUtils, CocoaThemes;
 
 type
 
@@ -80,8 +80,6 @@ type
     procedure destroyWatcher;
     function findWatch(const path: String; const event: TFSWatcherEvent): Integer;
   private
-    function toFileSourceEventCommon( event: TDarwinFSWatchEvent;
-      var fileSourceEvent: TFSWatcherEventData ): Boolean;
     function toFileSourceEvent( event: TDarwinFSWatchEvent;
       var fileSourceEvent: TFSWatcherEventData ): Boolean;
     procedure handleEventInMainThread;
@@ -105,12 +103,13 @@ type
 
   { TiCloudDriveUIHandler }
 
-  TiCloudDriveUIHandler = class( TFileSourceUIHandler )
+  TiCloudDriveUIHandler = class( TFileSourceUIHandler, ICocoaThemeObserver )
   private
     _downloadImage: NSImage;
   private
     procedure createImages;
     procedure releaseImages;
+    procedure onThemeChanged;
   public
     constructor Create;
     destructor Destroy; override;
@@ -221,60 +220,10 @@ begin
   end;
 end;
 
-// todo: refactor with TFileSystemWatcherImpl.handleFSEvent(event:TDarwinFSWatchEvent);
-function TiCloudDriveWatcher.toFileSourceEventCommon(event: TDarwinFSWatchEvent;
-  var fileSourceEvent: TFSWatcherEventData ): Boolean;
-begin
-  Result:= False;
-  if [watch_file_name_change, watch_attributes_change] * gWatchDirs = [] then exit;
-  if event.isDropabled then exit;
-///  if (ecChildChanged in event.categories) and (not isWatchSubdir(event.watchPath) ) then exit;
-
-  fileSourceEvent.Path := event.watchPath;
-  fileSourceEvent.FileName := EmptyStr;
-  fileSourceEvent.NewFileName := EmptyStr;
-  fileSourceEvent.OriginalEvent := event;
-  fileSourceEvent.EventType := fswUnknownChange;
-
-  if TDarwinFSWatchEventCategory.ecRootChanged in event.categories then begin
-    fileSourceEvent.EventType := fswSelfDeleted;
-  end else if event.fullPath.Length >= event.watchPath.Length+2 then begin
-    // 1. file-level update only valid if there is a FileName,
-    //    otherwise keep directory-level update
-    // 2. the order of the following judgment conditions must be preserved
-    if (not (watch_file_name_change in gWatchDirs)) and
-       ([ecStructChanged, ecAttribChanged] * event.categories = [ecStructChanged])
-         then exit;
-    if (not (watch_attributes_change in gWatchDirs)) and
-       ([ecStructChanged, ecAttribChanged] * event.categories = [ecAttribChanged])
-         then exit;
-
-    fileSourceEvent.FileName := ExtractFileName( event.fullPath );
-
-    if TDarwinFSWatchEventCategory.ecRemoved in event.categories then
-      fileSourceEvent.EventType := fswFileDeleted
-    else if TDarwinFSWatchEventCategory.ecRenamed in event.categories then begin
-      if ExtractFilePath(event.fullPath)=ExtractFilePath(event.renamedPath) then begin
-        // fswFileRenamed only when FileName and NewFileName in the same dir
-        // otherwise keep fswUnknownChange
-        fileSourceEvent.EventType := fswFileRenamed;
-        fileSourceEvent.NewFileName := ExtractFileName( event.renamedPath );
-      end;
-    end else if TDarwinFSWatchEventCategory.ecCreated in event.categories then
-      fileSourceEvent.EventType := fswFileCreated
-    else if TDarwinFSWatchEventCategory.ecAttribChanged in event.categories then
-      fileSourceEvent.EventType := fswFileChanged
-    else
-      exit;
-  end;
-
-  Result:= True;
-end;
-
 function TiCloudDriveWatcher.toFileSourceEvent(event: TDarwinFSWatchEvent;
   var fileSourceEvent: TFSWatcherEventData ): Boolean;
 begin
-  Result:= Self.toFileSourceEventCommon( event, fileSourceEvent );
+  Result:= TDarwinFSWatcherUtil.convertToFileSourceEvent( event, fileSourceEvent );
   if Result = false then
     Exit;
 
@@ -388,10 +337,16 @@ var
   manager: NSFileManager;
   files: NSArray;
   name: NSString;
+  error: NSError = nil;
 begin
   manager:= NSFileManager.defaultManager;
   files:= manager.contentsOfDirectoryAtPath_error(
-    path, nil );
+    path, @error );
+  if files = nil then begin
+    logDarwinError( 'TSeedFileUtil.doDownloadDirectory', error );
+    Exit;
+  end;
+
   for name in files do begin
     doDownload( path.stringByAppendingPathComponent(name) );
   end;
@@ -402,6 +357,8 @@ var
   manager: NSFileManager;
   isDirectory: ObjCBOOL;
   url: NSURL;
+  error: NSError = nil;
+  ok: Boolean;
 begin
   manager:= NSFileManager.defaultManager;
   manager.fileExistsAtPath_isDirectory( path, @isDirectory );
@@ -409,7 +366,9 @@ begin
     doDownloadDirectory( path );
   end else begin
     url:= NSUrl.fileURLWithPath( path );
-    manager.startDownloadingUbiquitousItemAtURL_error( url, nil );
+    ok:= manager.startDownloadingUbiquitousItemAtURL_error( url, @error );
+    if NOT ok then
+      logDarwinError( 'TSeedFileUtil.doDownload', error );
   end;
 end;
 
@@ -425,10 +384,14 @@ class procedure TSeedFileUtil.evict(const aFile: TFile);
 var
   url: NSUrl;
   manager: NSFileManager;
+  error: NSError = nil;
+  ok: Boolean;
 begin
   url:= NSUrl.fileURLWithPath( StrToNSString(aFile.FullPath) );
   manager:= NSFileManager.defaultManager;
-  manager.evictUbiquitousItemAtURL_error( url, nil );
+  ok:= manager.evictUbiquitousItemAtURL_error( url, @error );
+  if NOT ok then
+    logDarwinError( 'TSeedFileUtil.evict', error );
 end;
 
 class function TSeedFileUtil.isSeedFile(const aFile: TFile): Boolean;
@@ -541,7 +504,7 @@ begin
   _downloadImage.release;
   tempImage:= NSImage.alloc.initWithContentsOfFile( StrToNSString(mbExpandFileName(iCloudDriveConfig.icon.download)) );
   tempImage.setSize( NSMakeSize(16,16) );
-  if TDarwinApplicationUtil.isDarkTheme then begin
+  if TCocoaThemeServices.isDark then begin
     _downloadImage:= TDarwinImageUtil.invertColor( tempImage );
   end else begin
     _downloadImage:= tempImage;
@@ -556,14 +519,20 @@ begin
   _downloadImage:= nil;
 end;
 
+procedure TiCloudDriveUIHandler.onThemeChanged;
+begin
+  self.releaseImages;
+end;
+
 constructor TiCloudDriveUIHandler.Create;
 begin
   Inherited;
-  TDarwinApplicationUtil.addThemeObserver( @self.releaseImages );
+  TCocoaThemeServices.addObserver( self );
 end;
 
 destructor TiCloudDriveUIHandler.Destroy;
 begin
+  TCocoaThemeServices.removeObserver( self );
   self.releaseImages;
   Inherited;
 end;
@@ -578,6 +547,9 @@ var
     destRect: NSRect;
     fs: TiCloudDriveFileSource;
   begin
+    if params.iconRect.IsEmpty then
+      Exit;
+
     fs:= params.fs as TiCloudDriveFileSource;
     image:= fs.getAppIconByPath( params.displayFile.FSFile.FullPath );
     if image = nil then
@@ -607,9 +579,9 @@ var
       createImages;
 
     destRect.size:= _downloadImage.size;
-    destRect.origin.x:= params.drawingRect.Right - Round(_downloadImage.size.width) - 8;
-    destRect.origin.y:= params.drawingRect.Top + (params.drawingRect.Height-Round(_downloadImage.size.height))/2;
-    params.drawingRect.Right:= Round(destRect.origin.x) - 4;
+    destRect.origin.x:= params.decorationRect.Right - Round(_downloadImage.size.width) - 8;
+    destRect.origin.y:= params.decorationRect.Top + (params.decorationRect.Height-Round(_downloadImage.size.height))/2;
+    params.decorationRect.Right:= Round(destRect.origin.x) - 4;
 
     _downloadImage.drawInRect_fromRect_operation_fraction_respectFlipped_hints(
       destRect,
@@ -651,7 +623,11 @@ begin
   if NOT TSeedFileUtil.isSeedFile(aFile) then
     Exit;
 
-  if params.x < params.drawingRect.Right - 28 then
+  if params.x < params.decorationRect.Right - 28 then
+    Exit;
+  if params.y < params.decorationRect.Top then
+    Exit;
+  if params.y > params.decorationRect.Bottom then
     Exit;
 
   TSeedFileUtil.downloadOrEvict( params.fs, aFile );
