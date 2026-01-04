@@ -1841,6 +1841,8 @@ begin
         frmFindDlgUsingPluginDSX := Self;
         if DSXPlugins.LoadModule(cmbSearchProvider.ItemIndex - 1) then
         begin
+          lblFound.Caption := EmptyStr;
+          lblStatus.Caption := EmptyStr;
           lblCurrent.Caption := EmptyStr;
           SearchTemplateToFindFileChecks(TmpTemplate, FDSXFileChecks);
           FindOptionsToDSXSearchRec(SearchTemplate, sr);
