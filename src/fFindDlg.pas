@@ -95,7 +95,6 @@ type
     cbTimeTo: TCheckBox;
     cbPartialNameSearch: TCheckBox;
     cbFollowSymLinks: TCheckBox;
-    cbUsePlugin: TCheckBox;
     cbSelectedFiles: TCheckBox;
     cbTextRegExp: TCheckBox;
     cbFindInArchive: TCheckBox;
@@ -111,9 +110,9 @@ type
     cmbNotOlderThanUnit: TComboBox;
     cmbFileSizeUnit: TComboBox;
     cmbEncoding: TComboBox;
+    cmbSearchProvider:TComboBox;
     cmbSearchDepth: TComboBox;
     cbRegExp: TCheckBox;
-    cmbPlugin: TComboBox;
     cmbReplaceText: TComboBoxWithDelItems;
     cmbFindText: TComboBoxWithDelItems;
     cmbExcludeFiles: TComboBoxWithDelItems;
@@ -140,6 +139,7 @@ type
     miShowInEditor: TMenuItem;
     miShowAllFound: TMenuItem;
     miRemoveFromLlist: TMenuItem;
+    pnlProviderFrame:TPanel;
     pnlDuplicates: TPanel;
     pnlDirectoriesDepth: TPanel;
     pnlLoadSaveBottomButtons: TPanel;
@@ -227,7 +227,7 @@ type
     procedure chkHexChange(Sender: TObject);
     procedure cmbEncodingSelect(Sender: TObject);
     procedure cbFindTextChange(Sender: TObject);
-    procedure cbUsePluginChange(Sender: TObject);
+    procedure cmbSearchProviderChange(Sender:TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnSelDirClick(Sender: TObject);
     procedure cbFileSizeFromChange(Sender: TObject);
@@ -297,6 +297,7 @@ type
     FAtLeastOneSearchWasDone: boolean;
     FFileSource: IFileSource;
     FWcxModule: TWcxModule;
+    FDSXFileChecks: TFindFileChecks;
 
     property Commands: TFormCommands read FCommands implements IFormCommands;
 
@@ -466,6 +467,7 @@ end;
 procedure SAddFileProc({%H-}PlugNr: integer; FoundFile: PChar); dcpcall;
 var
   s: string;
+  aFile: TFile;
 begin
   s := string(FoundFile);
   if s = '' then
@@ -475,7 +477,17 @@ begin
   end
   else
   begin
-    TfrmFindDlg.Instance.FoundedStringCopy.Add(s);
+    try
+      aFile:= TFileSystemFileSource.CreateFileFromFile(s);
+      with TfrmFindDlg.Instance do
+        if CheckFile(FLastSearchTemplate.SearchRecord, FDSXFileChecks, aFile) then
+        begin
+          FoundedStringCopy.Add(s);
+          lblFound.Caption:= Format(rsFindFound, [FoundedStringCopy.Count]);
+        end;
+      FreeAndNil(aFile);
+    except
+    end;
     Application.ProcessMessages;
   end;
 end;
@@ -485,7 +497,8 @@ var
   sCurrentFile: string;
 begin
   sCurrentFile := string(CurrentFile);
-  TfrmFindDlg.Instance.lblStatus.Caption := Format(rsFindScanned, [FilesScanned]) + TfrmFindDlg.Instance.FTimeSearch;
+  //TfrmFindDlg.Instance.lblStatus.Caption := Format(rsFindScanned, [FilesScanned]) + TfrmFindDlg.Instance.FTimeSearch;
+  TfrmFindDlg.Instance.lblStatus.Caption := Format(rsFindScanned, [FilesScanned]);
   if sCurrentFile = '' then
     TfrmFindDlg.Instance.lblCurrent.Caption := ''
   else
@@ -575,7 +588,7 @@ begin
     begin
       // Prepare window for define search template
       LoadHistory;
-      LoadPlugins;
+      //LoadPlugins;
       Caption := rsFindDefineTemplate;
       DisableControlsForTemplate;
       btnSaveTemplate.Visible := True;
@@ -614,7 +627,7 @@ begin
     begin
       // Prepare window for define search template
       LoadHistory;
-      LoadPlugins;
+      //LoadPlugins;
       Caption := rsFindDefineTemplate;
       DisableControlsForTemplate;
       btnUseTemplate.Visible := True;
@@ -700,7 +713,6 @@ begin
   cmbEncoding.Items.Objects[0]:= TObject(PtrInt(True));
 
   // gray disabled fields
-  cbUsePluginChange(Sender);
   cbFindTextChange(Sender);
   cbReplaceTextChange(Sender);
   cbNotOlderThanChange(Sender);
@@ -738,16 +750,25 @@ begin
 {$ENDIF}
 end;
 
-{ TfrmFindDlg.cbUsePluginChange }
-procedure TfrmFindDlg.cbUsePluginChange(Sender: TObject);
+procedure TfrmFindDlg.cmbSearchProviderChange(Sender:TObject);
+var
+  isDSX: Boolean;
 begin
-  EnableControl(cmbPlugin, cbUsePlugin.Checked);
+  isDSX:= (cmbSearchProvider.ItemIndex > 0);
+  chkDuplicates.Visible:= not isDSX;
+  pnlDuplicates.Visible:= not isDSX;
+  cbOfficeXML.Visible:= not isDSX;
+  cbFindInArchive.Visible:= not isDSX;
+  chkHex.Visible:= not isDSX;
+  cbOpenedTabs.Visible:= not isDSX;
+  cbSelectedFiles.Visible:= not isDSX;
+  cbTextRegExp.Visible:= not isDSX;
+  lblEncoding.Visible:= not isDSX;
+  cmbEncoding.Visible:= not isDSX;
+  btnEncoding.Visible:= not isDSX;
 
-  if not FUpdating and cmbPlugin.Enabled and cmbPlugin.CanSetFocus and (Sender = cbUsePlugin) then
-  begin
-    cmbPlugin.SetFocus;
-    cmbPlugin.SelectAll;
-  end;
+  cbFollowSymLinks.Enabled:= not isDSX;
+  pnlDirectoriesDepth.Enabled:= not isDSX;
 end;
 
 { TfrmFindDlg.cmbEncodingSelect }
@@ -916,7 +937,6 @@ begin
   chkDuplicates.Checked:= False;
 
   // plugins
-  cbUsePlugin.Checked:= False;
   frmContentPlugins.chkUsePlugins.Checked:= False;
 
   FUpdating := False;
@@ -1259,10 +1279,10 @@ begin
     DuplicateHash:= chkDuplicateHash.Checked;
     DuplicateContent:= chkDuplicateContent.Checked;
     { Plugins }
-    if not cbUsePlugin.Checked then
+    if (cmbSearchProvider.ItemIndex > 0) then
       SearchPlugin := EmptyStr
     else begin
-      SearchPlugin := cmbPlugin.Text;
+      SearchPlugin := cmbSearchProvider.Text;
     end;
     frmContentPlugins.Save(FindOptions);
   end;
@@ -1316,12 +1336,12 @@ procedure TfrmFindDlg.StopSearch;
 begin
   if FSearchingActive then
   begin
-    if (cbUsePlugin.Checked) and (cmbPlugin.ItemIndex <> -1) then
+    if cmbSearchProvider.ItemIndex > 0 then
     begin
       if FSearchWithDSXPluginInProgress then
       begin
-        DSXPlugins.GetDSXModule(cmbPlugin.ItemIndex).CallStopSearch;
-        DSXPlugins.GetDSXModule(cmbPlugin.ItemIndex).CallFinalize;
+        DSXPlugins.GetDSXModule(cmbSearchProvider.ItemIndex - 1).CallStopSearch;
+        DSXPlugins.GetDSXModule(cmbSearchProvider.ItemIndex - 1).CallFinalize;
       end;
       AfterSearchStopped;
       AfterSearchFocus;
@@ -1357,6 +1377,7 @@ begin
   actNewSearchClearFilters.Enabled := True;
   actLastSearch.Enabled := True;
   FSearchingActive := False;
+  cmbSearchProvider.Enabled := True;
   if FSearchWithDSXPluginInProgress then
   begin
     FSearchWithDSXPluginInProgress := False;
@@ -1779,6 +1800,7 @@ begin
   actNewSearch.Enabled := False;
   actNewSearchClearFilters.Enabled := False;
   actLastSearch.Enabled := False;
+  cmbSearchProvider.Enabled := False;
 
   try
     if (frmContentPlugins.chkUsePlugins.Checked) and (gSearchWithWDXPluginInProgress) then
@@ -1800,18 +1822,19 @@ begin
 
     FoundedStringCopy.OnChange:= @FoundedStringCopyAdded;
 
-    if (cbUsePlugin.Checked) and (cmbPlugin.ItemIndex <> -1) then
+    if cmbSearchProvider.ItemIndex > 0 then
     begin
       if not gSearchWithDSXPluginInProgress then
       begin
         gSearchWithDSXPluginInProgress := True;
         FSearchWithDSXPluginInProgress := True;
         frmFindDlgUsingPluginDSX := Self;
-        if DSXPlugins.LoadModule(cmbPlugin.ItemIndex) then
+        if DSXPlugins.LoadModule(cmbSearchProvider.ItemIndex - 1) then
         begin
+          SearchTemplateToFindFileChecks(TmpTemplate, FDSXFileChecks);
           FindOptionsToDSXSearchRec(SearchTemplate, sr);
-          DSXPlugins.GetDSXModule(cmbPlugin.ItemIndex).CallInit(@SAddFileProc, @SUpdateStatusProc);
-          DSXPlugins.GetDSXModule(cmbPlugin.ItemIndex).CallStartSearch(sr);
+          DSXPlugins.GetDSXModule(cmbSearchProvider.ItemIndex - 1).CallInit(@SAddFileProc, @SUpdateStatusProc);
+          DSXPlugins.GetDSXModule(cmbSearchProvider.ItemIndex - 1).CallStartSearch(sr);
         end
         else
           StopSearch;
@@ -2336,18 +2359,23 @@ var
   I: Integer;
   AModule: TDsxModule;
 begin
-  cmbPlugin.Clear;
+  cmbSearchProvider.Clear;
+  cmbSearchProvider.Items.Add(rsMnuContentDefault);
   DSXPlugins.Assign(gDSXPlugins);
   for I := 0 to DSXPlugins.Count - 1 do
   begin
     AModule:= DSXPlugins.GetDSXModule(I);
     if Length(AModule.Descr) = 0 then
-      cmbPlugin.Items.Add(AModule.Name)
+      cmbSearchProvider.Items.Add(AModule.Name)
     else
-      cmbPlugin.Items.Add(AModule.Name + ' (' + AModule.Descr + ')');
+      cmbSearchProvider.Items.Add(AModule.Descr);
   end;
-  cbUsePlugin.Enabled := (cmbPlugin.Items.Count > 0);
-  if (cbUsePlugin.Enabled) then cmbPlugin.ItemIndex := 0;
+
+  cmbSearchProvider.Visible := (cmbSearchProvider.Items.Count > 1);
+  if Assigned(FLastSearchTemplate) and (FLastSearchTemplate.SearchRecord.SearchPlugin <> EmptyStr) then
+    cmbSearchProvider.ItemIndex:= cmbSearchProvider.Items.IndexOf(FLastSearchTemplate.SearchRecord.SearchPlugin)
+  else
+    cmbSearchProvider.ItemIndex:= 0;
 end;
 
 { TfrmFindDlg.FormShow }
@@ -2358,6 +2386,7 @@ begin
   {$ENDIF}
 
   pgcSearch.PageIndex := 0;
+  cmbSearchProviderChange(Sender);
 
   if cmbFindFileMask.Visible then
     cmbFindFileMask.SelectAll;
@@ -2490,13 +2519,9 @@ begin
       chkDuplicateHash.Checked := DuplicateHash;
       chkDuplicateContent.Checked := DuplicateContent;
       // plugins
-      if cbUsePlugin.Enabled then
-      begin
-        cmbPlugin.Tag := cmbPlugin.Items.IndexOf(SearchPlugin);
-        cbUsePlugin.Checked:= (cmbPlugin.Tag >= 0);
-        if cbUsePlugin.Checked then
-          cmbPlugin.ItemIndex := cmbPlugin.Tag;
-      end;
+      cmbSearchProvider.Tag := cmbSearchProvider.Items.IndexOf(SearchPlugin);
+      if (cmbSearchProvider.Tag >= 0) then
+        cmbSearchProvider.ItemIndex := cmbSearchProvider.Tag;
       frmContentPlugins.Load(Template);
     end;
 
@@ -2506,7 +2531,7 @@ begin
     //2. If not but we're using at least something from the "Advanced" tab, switch to it.
     //3. If nothing above, at least switch to "Standard" tab.
     pgcSearch.Options:= pgcSearch.Options + [nboDoChangeOnSetIndex];
-    if (cbUsePlugin.Checked OR frmContentPlugins.chkUsePlugins.Checked) then
+    if (frmContentPlugins.chkUsePlugins.Checked) then
       pgcSearch.ActivePage := tsPlugins
     else
       if (cbNotOlderThan.Checked OR cbFileSizeFrom.Checked OR cbFileSizeTo.Checked OR cbDateFrom.Checked OR cbDateTo.Checked OR cbTimeFrom.Checked OR cbTimeTo.Checked OR (edtAttrib.Text<>'')) then
