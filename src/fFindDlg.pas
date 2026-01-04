@@ -470,25 +470,29 @@ var
   aFile: TFile;
 begin
   s := string(FoundFile);
-  if s = '' then
+  with TfrmFindDlg.Instance do
   begin
-    TfrmFindDlg.Instance.AfterSearchStopped;
-    TfrmFindDlg.Instance.btnStart.Default := True;
-  end
-  else
-  begin
-    try
-      aFile:= TFileSystemFileSource.CreateFileFromFile(s);
-      with TfrmFindDlg.Instance do
+    if s = '' then
+    begin
+      AfterSearchStopped;
+      btnStart.Default:= True;
+      lblCurrent.Caption:= rsFindScanning + ': ' + rsOperFinished;
+      SetWindowCaption(wcs_EndSearch);
+    end
+    else
+    begin
+      try
+        aFile:= TFileSystemFileSource.CreateFileFromFile(s);
         if CheckFile(FLastSearchTemplate.SearchRecord, FDSXFileChecks, aFile) then
         begin
           FoundedStringCopy.Add(s);
           lblFound.Caption:= Format(rsFindFound, [FoundedStringCopy.Count]);
         end;
-      FreeAndNil(aFile);
-    except
+        FreeAndNil(aFile);
+      except
+      end;
+      Application.ProcessMessages;
     end;
-    Application.ProcessMessages;
   end;
 end;
 
@@ -497,12 +501,14 @@ var
   sCurrentFile: string;
 begin
   sCurrentFile := string(CurrentFile);
-  //TfrmFindDlg.Instance.lblStatus.Caption := Format(rsFindScanned, [FilesScanned]) + TfrmFindDlg.Instance.FTimeSearch;
-  TfrmFindDlg.Instance.lblStatus.Caption := Format(rsFindScanned, [FilesScanned]);
-  if sCurrentFile = '' then
-    TfrmFindDlg.Instance.lblCurrent.Caption := ''
-  else
-    TfrmFindDlg.Instance.lblCurrent.Caption := rsFindScanning + ': ' + sCurrentFile;
+  with TfrmFindDlg.Instance do
+  begin
+    lblStatus.Caption:= Format(rsFindScanned, [FilesScanned]);
+    if sCurrentFile = '' then
+      lblCurrent.Caption:= ''
+    else
+      lblCurrent.Caption:= rsFindScanning + ': ' + sCurrentFile;
+    end;
   Application.ProcessMessages;
 end;
 
@@ -769,6 +775,7 @@ begin
 
   cbFollowSymLinks.Enabled:= not isDSX;
   pnlDirectoriesDepth.Enabled:= not isDSX;
+  pnlProviderFrame.Visible:= isDSX;
 end;
 
 { TfrmFindDlg.cmbEncodingSelect }
@@ -1822,6 +1829,9 @@ begin
 
     FoundedStringCopy.OnChange:= @FoundedStringCopyAdded;
 
+    SetWindowCaption(wcs_StartSearch);
+    FTimeSearch := '';
+
     if cmbSearchProvider.ItemIndex > 0 then
     begin
       if not gSearchWithDSXPluginInProgress then
@@ -1831,6 +1841,7 @@ begin
         frmFindDlgUsingPluginDSX := Self;
         if DSXPlugins.LoadModule(cmbSearchProvider.ItemIndex - 1) then
         begin
+          lblCurrent.Caption := EmptyStr;
           SearchTemplateToFindFileChecks(TmpTemplate, FDSXFileChecks);
           FindOptionsToDSXSearchRec(SearchTemplate, sr);
           DSXPlugins.GetDSXModule(cmbSearchProvider.ItemIndex - 1).CallInit(@SAddFileProc, @SUpdateStatusProc);
@@ -1863,9 +1874,7 @@ begin
         OnTerminate := @ThreadTerminate; // will update the buttons after search is finished
       end;
 
-      SetWindowCaption(wcs_StartSearch);
 
-      FTimeSearch := '';
       FFindThread.Start;
       FUpdateTimer.Enabled := True;
       FUpdateTimer.OnTimer(FUpdateTimer);
