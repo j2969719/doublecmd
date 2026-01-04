@@ -8,9 +8,8 @@ interface
 uses
   Classes, SysUtils, LCLType,
   sqldb, SQLite3Conn, syncobjs,
-  uLog, uDebug,
-  MacOSAll, CocoaAll, CocoaConst, CocoaUtils, Cocoa_Extra,
-  uDarwinUtil;
+  MacOSAll, CocoaAll, CocoaConst, Cocoa_Extra,
+  uDarwinFile, uDarwinUtil;
 
 type
 
@@ -396,7 +395,7 @@ var
     plistProperties: id;
     error: NSError = nil;
   begin
-    plistData:= NSData.dataWithContentsOfFile( path );
+    plistData:= TDarwinFileUtil.dataWithContentsOfFile( path, 'TDarwinFinderModelUtil.searchFilesBySavedSearch.analyseSavedSearch()' );
     if plistData = nil then
       raise EInOutError.Create( 'savedSearch File Read Error: ' + path.UTF8String );
 
@@ -428,7 +427,7 @@ end;
 class procedure TDarwinFinderModelUtil.searchFilesBySavedSearch(
   const path: String; const handler: TMacOSSearchResultHandler);
 begin
-  TDarwinFinderModelUtil.searchFilesBySavedSearch( StrToNSString(path), handler );
+  TDarwinFinderModelUtil.searchFilesBySavedSearch( StringToNSString(path), handler );
 end;
 
 class procedure TDarwinFinderModelUtil.searchFilesForTagNames(
@@ -500,8 +499,7 @@ begin
   except
     // it is suitable for just recording exception and handling it silently
     on e: Exception do begin
-      DCDebug( 'Exception in uDarwinFinderUtil.getAllTags(): ', e.ToString );
-      LogWrite( 'Exception in uDarwinFinderUtil.getAllTags(): ' + e.ToString, lmtError );
+      logDarwinException( 'uDarwinFinderUtil.getAllTags()', e );
     end;
   end;
 end;
@@ -516,7 +514,7 @@ begin
   Result:= nil;
   path:= NSHomeDirectory.stringByAppendingString( NSSTR(FAVORITE_FINDER_TAGS_FILE_PATH) );
 
-  plistData:= NSData.dataWithContentsOfFile( path );
+  plistData:= TDarwinFileUtil.dataWithContentsOfFile( path, 'TDarwinFinderModelUtil.getFavoriteTagNames()' );
   if plistData = nil then
     Exit;
 
@@ -622,7 +620,7 @@ begin
   Result:= nil;
   path:= NSHomeDirectory.stringByAppendingString( NSSTR(FINDER_TAGS_FILE_PATH_11minus) );
 
-  plistData:= NSData.dataWithContentsOfFile( path );
+  plistData:= TDarwinFileUtil.dataWithContentsOfFile( path, 'TDarwinFinderModelUtil.getTagsData_macOS11()' );
   if plistData = nil then
     Exit;
 

@@ -49,6 +49,8 @@ type
     function IsPathAtRoot(Path: String): Boolean; override;
     function GetDisplayFileName(aFile: TFile): String; override;
     function QueryContextMenu(AFiles: TFiles; var AMenu: TPopupMenu): Boolean; override;
+
+    procedure AddSearchPath( const startPath: String; paths: TStringList); override;
   end;
 
 implementation
@@ -376,7 +378,7 @@ class procedure TSeedFileUtil.download(const aFile: TFile);
 var
   path: NSString;
 begin
-  path:= StrToNSString( aFile.FullPath );
+  path:= StringToNSString( aFile.FullPath );
   doDownload( path );
 end;
 
@@ -802,6 +804,22 @@ begin
   AMenu.Items.Insert(1, menuItem);
 
   Result:= True;
+end;
+
+procedure TiCloudDriveFileSource.AddSearchPath( const startPath: String; paths: TStringList );
+var
+  iCloudDrivePath: String;
+  iCloudBasePath: String;
+begin
+  if paths.Count > 0 then
+    Exit;
+
+  iCloudDrivePath:= uDCUtils.ReplaceTilde( iCloudDriveConfig.path.drive );
+  if ExcludeTrailingPathDelimiter(startPath) <> iCloudDrivePath then
+    Exit;
+
+  iCloudBasePath:= uDCUtils.ReplaceTilde( iCloudDriveConfig.path.base );
+  paths.Add( iCloudBasePath );
 end;
 
 initialization

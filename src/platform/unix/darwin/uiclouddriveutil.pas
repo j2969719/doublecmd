@@ -7,7 +7,7 @@ interface
 
 uses
   Classes, SysUtils, fgl, Graphics,
-  CocoaAll, CocoaUtils,
+  CocoaAll,
   uDCUtils, uDarwinFile, uDarwinUtil, uiCloudDriveConfig;
 
 type
@@ -50,15 +50,15 @@ end;
 
 class function iCloudDriveUtil.getPlistAppIconNames(const path: String ): NSArray;
 var
-  plistPath: NSString;
+  plistPath: String;
   plistData: NSData;
   plistProperties: id;
   error: NSError = nil;
 begin
   Result:= nil;
-  plistPath:= StrToNSString( uDCUtils.ReplaceTilde(path) );
+  plistPath:= uDCUtils.ReplaceTilde( path );
 
-  plistData:= NSData.dataWithContentsOfFile( plistPath );
+  plistData:= TDarwinFileUtil.dataWithContentsOfFile( plistPath, 'iCloudDriveUtil.getPlistAppIconNames()' );
   if plistData = nil then
     Exit;
 
@@ -90,7 +90,7 @@ begin
   if appIconNames = nil then
     Exit;
 
-  appResourcePath:= StrToNSString( uDCUtils.ReplaceTilde(iCloudDriveConfig.path.container) + '/' + appFileName + '/' );
+  appResourcePath:= StringToNSString( uDCUtils.ReplaceTilde(iCloudDriveConfig.path.container) + '/' + appFileName + '/' );
 
   appImage:= NSImage.new;
   for appIconName in appIconNames do begin
