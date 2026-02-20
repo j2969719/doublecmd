@@ -105,7 +105,6 @@ procedure ExtensionInitialize(StartupInfo: PExtensionStartupInfo); dcpcall; expo
 
 function ReadPassword(ConnectionName: AnsiString; out Password: AnsiString): Boolean;
 function DeletePassword(ConnectionName: AnsiString): Boolean;
-function GetSpecialName(Name: AnsiString): String;
 
 var
   gStartupInfo: TExtensionStartupInfo;
@@ -309,18 +308,6 @@ begin
   end;
 end;
 
-function GetSpecialName(Name: AnsiString): String;
-var
-  ID: String;
-  Output: array[0..(MAX_PATH)-1] of Char;
-begin
-  Result:= '<' + Name + '>';
-  ID:= '#: ftpfunc.' + LowerCase(StringReplace(Name, ' ', '', [rfReplaceAll]));
-  if (gStartupInfo.Translation <> nil) and
-     (gStartupInfo.TranslateString(gStartupInfo.Translation, PChar(ID), PChar(Name), Output, MAX_PATH) > 0) then
-    Result:= '<' + Output + '>';
-end;
-
 function FtpConnect(const ConnectionName: AnsiString; out FtpSend: TFTPSendEx): Boolean;
 var
   I: Integer;
@@ -419,7 +406,7 @@ begin
           Connection.CachedPassword:= APassword;
           LogProc(PluginNumber, MSGTYPE_CONNECT, PWideChar('CONNECT ' + PathDelim + CeUtf8ToUtf16(ConnectionName)));
           ActiveConnectionList.AddObject(ConnectionName, FtpSend);
-          if Connection.OpenSSH and (ConnectionName <> GetSpecialName(cQuickConnection)) then
+          if Connection.OpenSSH and (ConnectionName <> cQuickConnection) then
           begin
             // Save connection server fingerprint
             if Connection.Fingerprint <> TScpSend(FtpSend).Fingerprint then
@@ -438,19 +425,17 @@ function QuickConnection(out FtpSend: TFTPSendEx): Boolean;
 var
   Index: Integer;
   Connection: TConnection;
-  FileName: String;
 begin
-  FileName:= GetSpecialName(cQuickConnection);
-  Index:= ActiveConnectionList.IndexOf(FileName);
+  Index:= ActiveConnectionList.IndexOf(cQuickConnection);
   Result:= (Index >= 0);
   if Result then
     FtpSend:= TFTPSendEx(ActiveConnectionList.Objects[Index])
   else begin
     Connection := TConnection.Create;
-    Connection.ConnectionName:= FileName;
+    Connection.ConnectionName:= cQuickConnection;
     if ShowFtpConfDlg(Connection) then
     begin
-      Connection.ConnectionName:= FileName;
+      Connection.ConnectionName:= cQuickConnection;
       Index:= ConnectionList.AddObject(Connection.ConnectionName, Connection);
       Result:= FtpConnect(Connection.ConnectionName, FtpSend);
       ConnectionList.Delete(Index);
@@ -633,7 +618,7 @@ begin
   FillChar(FindData, SizeOf(FindData), 0);
   if I < RootCount then
   begin
-    StrPCopy(FindData.cFileName, CeUtf8ToUtf16(GetSpecialName(RootList[I])));
+    StrPCopy(FindData.cFileName, CeUtf8ToUtf16(RootList[I]));
     FindData.dwFileAttributes := 0;
     Inc(ListRec^.Index);
     Result := True;
@@ -755,12 +740,12 @@ begin
           end
         else  // special item
           begin
-            if asFileName = GetSpecialName(cAddConnection) then
+            if asFileName = cAddConnection then
               begin
                 AddConnection;
                 Result:= FS_EXEC_OK;
               end
-            else if asFileName = GetSpecialName(cQuickConnection) then
+            else if asFileName = cQuickConnection then
               begin
                 if not QuickConnection(FtpSend) then
                   Result := FS_EXEC_OK
