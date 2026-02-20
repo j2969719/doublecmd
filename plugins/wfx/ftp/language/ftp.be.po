@@ -163,10 +163,11 @@ msgstr "Проксі"
 msgid "Properties"
 msgstr "Уласцівасці"
 
-#: ftpfunc.addconnection
+#: ftplng.rsaddconnection
 msgid "Add connection"
 msgstr "Дадаць падключэнне"
 
-#: ftpfunc.quickconnection
+#: ftplng.rsquickconnection
 msgid "Quick connection"
 msgstr "Хуткае падключэнне"
+

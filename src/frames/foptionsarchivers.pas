@@ -229,7 +229,7 @@ implementation
 
 uses
   //Lazarus, Free-Pascal, etc.
-  IntegerList,
+  IntegerList, LCLVersion,
   //DC
   DCStrUtils, uGlobs, uLng, uSpecialDir, uGlobsPaths, uShowMsg,
   uMultiArchiveUtil;
@@ -1045,6 +1045,9 @@ procedure TfrmOptionsArchivers.btnArchiverSelectFileArchiverClick(Sender: TObjec
 begin
   OpenArchiverDialog.DefaultExt := '*.*';
   OpenArchiverDialog.FilterIndex := 2;
+{$if lcl_fullversion >= 4990000}
+  OpenArchiverDialog.OptionsEx := [ofShowsFilePackagesSwitch];
+{$endif}
   OpenArchiverDialog.Title := rsOptArchiverArchiver;
   if OpenArchiverDialog.Execute then
   begin

@@ -239,7 +239,7 @@ uses
   uFileSystemFileSource, uFileSourceOperationOptions, DCDateTimeUtils, SyncObjs,
   uDCUtils, uFileSourceUtil, uFileSourceOperationTypes, uShowForm, uAdministrator,
   uOSUtils, uLng, uMasks, Math, uClipboard, IntegerList, fMaskInputDlg, uSearchTemplate,
-  SysConst, DCStrUtils, uTypes, uFileSystemDeleteOperation, uFindFiles;
+  LCLVersion, SysConst, DCStrUtils, DCOSUtils, uTypes, uFileSystemDeleteOperation, uFindFiles;
 
 {$R *.lfm}
 
@@ -591,7 +591,7 @@ var
   bTemplate: Boolean;
 begin
   sMask:= cbExtFilter.Text;
-  if ShowMaskInputDlg(rsMarkPlus, rsMaskInput, glsMaskHistory, sMask) then
+  if ShowMaskInputDlg(rsMarkPlus, rsMaskInput, glsSyncMaskHistory, sMask) then
   begin
     bTemplate:= IsMaskSearchTemplate(sMask);
     cbExtFilter.Enabled:= not bTemplate;
@@ -894,7 +894,7 @@ begin
   end;
   if chkByContent.Enabled then
     gSyncDirsByContent          := chkByContent.Checked;
-  glsMaskHistory.Assign(cbExtFilter.Items);
+  glsSyncMaskHistory.Assign(cbExtFilter.Items);
 
   with HeaderDG.Columns do
   begin
@@ -955,13 +955,13 @@ begin
   sbSingles.Down         := gSyncDirsShowFilterSingles;
   if gSyncDirsFileMaskSave = False then
   begin
-    Index := glsMaskHistory.IndexOf(gSyncDirsFileMask);
+    Index := glsSyncMaskHistory.IndexOf(gSyncDirsFileMask);
     if Index <> -1 then
-      glsMaskHistory.Move(Index, 0)
+      glsSyncMaskHistory.Move(Index, 0)
     else
-      glsMaskHistory.Insert(0, gSyncDirsFileMask);
+      glsSyncMaskHistory.Insert(0, gSyncDirsFileMask);
   end;
-  cbExtFilter.Items.Assign(glsMaskHistory);
+  cbExtFilter.Items.Assign(glsSyncMaskHistory);
   cbExtFilter.Text       := gSyncDirsFileMask;
 
   HMSync := HotMan.Register(Self, HotkeysCategory);
@@ -1390,6 +1390,7 @@ var
       i, j: Integer;
       f: TFile;
       r: TFileSyncRec;
+      fn: String;
     begin
       if sideLeft then
         fs := FFileSourceL.GetFiles(BaseDirL + dir)
@@ -1409,19 +1410,20 @@ var
         for i := 0 to fs.Count - 1 do
         begin
           f := fs.Items[i];
+          fn := NormalizeFileName(f.Name);
           if f.IsDirectory or f.IsLinkToDirectory then
           begin
             if (f.NameNoExt <> '.') and (f.NameNoExt <> '..') then
             begin
               if (Template = nil) or (CheckDirectoryName(Template.FileChecks, f.Name)) then
-                dirs.Add(f.Name);
+                dirs.Add(fn);
             end;
           end
           else if (Template = nil) or Template.CheckFile(f) then
           begin
             if ((MaskList = nil) or MaskList.Matches(f.Name)) then
             begin
-              j := it.IndexOf(f.Name);
+              j := it.IndexOf(fn);
               if j < 0 then
                 r := TFileSyncRec.Create(Self, dir)
               else
@@ -1439,7 +1441,7 @@ var
                   r.FState := srsUnknown;
                 end;
               end;
-              it.AddObject(f.Name, r);
+              it.AddObject(fn, r);
             end;
           end;
         end;
@@ -2046,10 +2048,18 @@ begin
   FFileSourceR := FileView2.FileSource;
   FAddressL := FileView1.CurrentAddress;
   FAddressR := FileView2.CurrentAddress;
-  with FileView1 do
+  with FileView1 do begin
     edPath1.Text := FAddressL + CurrentPath;
-  with FileView2 do
+{$if lcl_fullversion >= 4990000}
+    edPath1.DialogOptionsEx:= [ofShowsFilePackagesSwitch];
+{$endif}
+  end;
+  with FileView2 do begin
     edPath2.Text := FAddressR + CurrentPath;
+{$if lcl_fullversion >= 4990000}
+    edPath2.DialogOptionsEx:= [ofShowsFilePackagesSwitch];
+{$endif}
+  end;
   RecalcHeaderCols;
   MainDrawGrid.DoubleBuffered := True;
   MainDrawGrid.Font.Bold := True;

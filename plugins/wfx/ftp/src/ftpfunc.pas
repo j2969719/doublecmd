@@ -3,7 +3,7 @@
    -------------------------------------------------------------------------
    Wfx plugin for working with File Transfer Protocol
 
-   Copyright (C) 2009-2023 Alexander Koblov (alexx2000@mail.ru)
+   Copyright (C) 2009-2026 Alexander Koblov (alexx2000@mail.ru)
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -30,10 +30,6 @@ interface
 uses
   SysUtils, Classes,
   WfxPlugin, Extension;
-
-const
-  cAddConnection = 'Add connection';
-  cQuickConnection = 'Quick connection';
 
 type
 
@@ -127,7 +123,7 @@ implementation
 uses
   IniFiles, StrUtils, FtpAdv, FtpUtils, FtpConfDlg, syncobjs, LazFileUtils,
   LazUTF8, DCClassesUtf8, DCConvertEncoding, SftpSend, ScpSend, FtpProxy,
-  FtpPropDlg, DCFileAttributes;
+  FtpPropDlg, FtpLng, DCFileAttributes;
 
 var
   DefaultIniName: String;
@@ -141,7 +137,6 @@ threadvar
 
 const
   FS_COPYFLAGS_FORCE = FS_COPYFLAGS_OVERWRITE or FS_COPYFLAGS_RESUME;
-  RootList: array [0 .. 1] of AnsiString = (cAddConnection, cQuickConnection);
 
 type
   TListRec = record
@@ -625,12 +620,15 @@ end;
 
 function LocalFindNext(Hdl: THandle; var FindData: TWin32FindDataW): Boolean;
 var
-  ListRec: PListRec absolute Hdl;
   I, RootCount: Integer;
   Connection: TConnection;
+  ListRec: PListRec absolute Hdl;
+  RootList: array [0..1] of String;
 begin
   Result := False;
   I := ListRec^.Index;
+  RootList[0]:= cAddConnection;
+  RootList[1]:= cQuickConnection;
   RootCount := High(RootList) + 1;
   FillChar(FindData, SizeOf(FindData), 0);
   if I < RootCount then
@@ -1104,19 +1102,24 @@ begin
 end;
 
 function FsExtractCustomIconW(RemoteName: PWideChar; ExtractFlags: Integer; TheIcon: PWfxIcon): Integer; dcpcall; export;
+var
+  asRemoteName: String;
 begin
   Result:= FS_ICON_USEDEFAULT;
   if (ExtractFileDir(RemoteName) = PathDelim) then
   begin
+    asRemoteName:= CeUtf16ToUtf8(RemoteName + 1);
     Result:= FS_ICON_EXTRACTED;
     TheIcon^.Format:= FS_ICON_FORMAT_FILE;
     if RemoteName[1] <> '<' then
       StrPLCopy(RemoteName, CeUtf8ToUtf16(gStartupInfo.PluginDir + 'ftp.ico'), MAX_PATH - 1)
-    else
+    else if (asRemoteName='') or (RemoteName[1]='<') then
     begin
-      if RemoteName + 1 = GetSpecialName(cAddConnection) then
+      if asRemoteName = '' then
+        StrPCopy(RemoteName, gStartupInfo.PluginDir+'ftp.ico')
+      else if asRemoteName = cAddConnection then
         StrPCopy(RemoteName, 'list-add')
-      else if RemoteName + 1 = GetSpecialName(cQuickConnection) then
+      else if asRemoteName = cQuickConnection then
         StrPCopy(RemoteName, 'view-file');
     end;
   end;
@@ -1212,6 +1215,7 @@ procedure ExtensionInitialize(StartupInfo: PExtensionStartupInfo);
 begin
   gStartupInfo:= StartupInfo^;
   DefaultIniName:= gStartupInfo.PluginConfDir + DefaultIniName;
+  TranslateResourceStrings;
 
   try
     IniFile := TIniFileEx.Create(DefaultIniName, fmOpenReadWrite);

@@ -152,10 +152,11 @@ msgstr "代理"
 msgid "Properties"
 msgstr ""
 
-#: ftpfunc.addconnection
+#: ftplng.rsaddconnection
 msgid "Add connection"
 msgstr ""
 
-#: ftpfunc.quickconnection
+#: ftplng.rsquickconnection
 msgid "Quick connection"
 msgstr ""
+

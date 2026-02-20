@@ -173,7 +173,17 @@ type
 
 const
   { Default hotkey list version number }
-  hkVersion = 68;
+  hkVersion = 72;
+  // 72 - In "Viewer" and "Editor" context, for macOS, added:
+  //      "Cmd+G" for Find Next
+  //      "Cmd+L" for Goto Line
+  // 71 - In "Differ" context, for macOS, added:
+  //      Base ShortCut for Edit
+  // 70 - In "Main" context, for macOS, added:
+  //      "Cmd+W" for "cm_CloseTab"
+  // 69 - In "Main" context, for macOS, added:
+  //      "Cmd+[" for "cm_ViewHistoryPrev"
+  //      "Cmd+]" for "cm_ViewHistoryNext"
   // 68 - In "Main" context, for macOS, added:
   //      "Shift+Cmd+." for "cm_ShowSysFiles"
   //      "Cmd+," for "cm_Options"
@@ -367,6 +377,7 @@ var
   glsDirHistory:TStringListEx;
   glsCmdLineHistory: TStringListEx;
   glsMaskHistory : TStringListEx;
+  glsSyncMaskHistory : TStringListEx;
   glsSearchHistory : TStringListEx;
   glsSearchPathHistory : TStringListEx;
   glsReplaceHistory : TStringListEx;
@@ -969,6 +980,7 @@ begin
       LoadHistory('CommandLine', glsCmdLineHistory);
       LoadHistory('VolumeSize', glsVolumeSizeHistory);
       LoadHistory('FileMask', glsMaskHistory);
+      LoadHistory('SyncDirsMask', glsSyncMaskHistory);
       LoadHistory('SearchText', glsSearchHistory, True);
       LoadHistory('SearchTextPath', glsSearchPathHistory);
       LoadHistory('ReplaceText', glsReplaceHistory);
@@ -1016,6 +1028,7 @@ begin
     if gSaveDirHistory then SaveHistory('Navigation', glsDirHistory);
     if gSaveCmdLineHistory then SaveHistory('CommandLine', glsCmdLineHistory);
     if gSaveFileMaskHistory then SaveHistory('FileMask', glsMaskHistory);
+    if gSaveFileMaskHistory then SaveHistory('SyncDirsMask', glsSyncMaskHistory);
     if gSaveVolumeSizeHistory then SaveHistory('VolumeSize', glsVolumeSizeHistory);
     if gSaveCreateDirectoriesHistory then begin
       SaveHistory('CreateDirectories', glsCreateDirectoriesHistory, True);
@@ -1216,6 +1229,9 @@ begin
       AddIfNotExists(['Cmd+,'],[],'cm_Options');
       AddIfNotExists(['Cmd+Down'],[],'cm_Open');
       AddIfNotExists(['Cmd+Up'],'cm_ChangeDirToParent',['Ctrl+PgUp'],[]);
+      AddIfNotExists(['Cmd+['],'cm_ViewHistoryPrev',['Alt+Left'],[]);
+      AddIfNotExists(['Cmd+]'],'cm_ViewHistoryNext',['Alt+Right'],[]);
+      AddIfNotExists(['Cmd+W'],'cm_CloseTab',['Ctrl+W'],[]);
       {$ENDIF}
 
       if HotMan.Version < 38 then
@@ -1332,7 +1348,11 @@ begin
 
       AddIfNotExists(['Num+'],[],'cm_ZoomIn');
       AddIfNotExists(['Num-'],[],'cm_ZoomOut');
-      {$IFDEF DARWIN}
+      {$IFnDEF DARWIN}
+      AddIfNotExists(VK_G, [ssModifier], 'cm_GotoLine');
+      {$ELSE}
+      AddIfNotExists(['Cmd+L'],[],'cm_GotoLine');
+      AddIfNotExists(['Cmd+G'],'cm_FindNext',['F3'],[]);
       AddIfNotExists(['Cmd+='],'cm_ZoomIn',['Num+'],[]);
       AddIfNotExists(['Cmd+-'],'cm_ZoomOut',['Num-'],[]);
       {$ENDIF}
@@ -1343,7 +1363,6 @@ begin
       //AddIfNotExists(['Down'],[],'cm_Rotate90');
 
       AddIfNotExists(VK_P, [ssModifier], 'cm_Print');
-      AddIfNotExists(VK_G, [ssModifier], 'cm_GotoLine');
       AddIfNotExists(VK_A, [ssModifier], 'cm_SelectAll');
       AddIfNotExists(VK_C, [ssModifier], 'cm_CopyToClipboard');
       AddIfNotExists(VK_Z, [ssModifier], 'cm_Undo');
@@ -1358,12 +1377,11 @@ begin
   HMForm := HotMan.Forms.FindOrCreate('Differ');
   with HMForm.Hotkeys do
     begin
-      AddIfNotExists(['Ctrl+R'],[],'cm_Reload');
+      AddIfNotExists(VK_R, [ssModifier], 'cm_Reload');
       AddIfNotExists([SmkcSuper + 'F' ,'','',
                       'F7'            ,'',''],'cm_Find');
       AddIfNotExists(['F3'],[],'cm_FindNext');
       AddIfNotExists(['Shift+F3'],[],'cm_FindPrev');
-      AddIfNotExists(VK_G, [ssModifier], 'cm_GotoLine');
       AddIfNotExists(['Alt+Down'],[],'cm_NextDifference');
       AddIfNotExists(['Alt+Up'],[],'cm_PrevDifference');
       AddIfNotExists(['Alt+Home'],[],'cm_FirstDifference');
@@ -1371,6 +1389,18 @@ begin
       AddIfNotExists(['Alt+X'],[],'cm_Exit');
       AddIfNotExists(['Alt+Left'],[],'cm_CopyRightToLeft');
       AddIfNotExists(['Alt+Right'],[],'cm_CopyLeftToRight');
+
+      AddIfNotExists(VK_X, [ssModifier], 'cm_EditCut');
+      AddIfNotExists(VK_C, [ssModifier], 'cm_EditCopy');
+      AddIfNotExists(VK_Z, [ssModifier], 'cm_EditUndo');
+      AddIfNotExists(VK_V, [ssModifier], 'cm_EditPaste');
+      AddIfNotExists(VK_A, [ssModifier], 'cm_EditSelectAll');
+      AddIfNotExists(VK_Z, [ssModifier, ssShift], 'cm_EditRedo');
+      AddIfNotExists(VK_L, [ssModifier], 'cm_GotoLine');
+
+      {$IFDEF DARWIN}
+      AddIfNotExists(['Cmd+G'],'cm_FindNext',['F3'],[]);
+      {$ENDIF}
     end;
 
   HMForm := HotMan.Forms.FindOrCreate('Confirmation');
@@ -1437,9 +1467,12 @@ begin
       AddIfNotExists(VK_V, [ssModifier], 'cm_EditPaste');
       AddIfNotExists(VK_A, [ssModifier], 'cm_EditSelectAll');
       AddIfNotExists(VK_Z, [ssModifier, ssShift], 'cm_EditRedo');
-      AddIfNotExists(VK_G, [ssModifier], 'cm_EditGotoLine');
 
-      {$IFDEF DARWIN}
+      {$IFnDEF DARWIN}
+      AddIfNotExists(VK_G, [ssModifier], 'cm_EditGotoLine');
+      {$ELSE}
+      AddIfNotExists(['Cmd+L'],[],'cm_EditGotoLine');
+      AddIfNotExists(['Cmd+G'],'cm_EditFindNext',['F3'],[]);
       AddIfNotExists(['Cmd+='],[],'cm_ZoomIn');
       AddIfNotExists(['Cmd+-'],[],'cm_ZoomOut');
       {$ENDIF}
@@ -1641,6 +1674,7 @@ begin
   glsCmdLineHistory := TStringListEx.Create;
   glsVolumeSizeHistory := TStringListEx.Create;
   glsMaskHistory := TStringListEx.Create;
+  glsSyncMaskHistory := TStringListEx.Create;
   glsSearchHistory := TStringListEx.Create;
   glsSearchPathHistory := TStringListEx.Create;
   glsReplaceHistory := TStringListEx.Create;
@@ -1676,6 +1710,7 @@ begin
   FreeAndNil(gDirectoryHotlist);
   FreeAndNil(gFavoriteTabsList);
   FreeAndNil(glsMaskHistory);
+  FreeAndNil(glsSyncMaskHistory);
   FreeAndNil(glsSearchHistory);
   FreeAndNil(glsSearchPathHistory);
   FreeAndNil(glsReplaceHistory);
@@ -1908,7 +1943,7 @@ begin
 
   { Layout page }
   gMainMenu := True;
-  gButtonBar := True;
+  gButtonBar := {$IFnDEF DARWIN}True{$ELSE}False{$ENDIF};
   gToolBarFlat := True;
   gMiddleToolBar := False;
   gToolBarButtonSize := 24;
@@ -2128,7 +2163,7 @@ begin
   gIconsSizeNew := gIconsSize;
   gDiskIconsSize := 16;
   gDiskIconsAlpha := 50;
-  gToolIconsSize := 24;
+  gToolIconsSize := {$IFnDEF DARWIN}24{$ELSE}16{$ENDIF};  // Theme icons lack precision on Retina displays
   gIconsExclude := False;
   gIconsExcludeDirs := EmptyStr;
   gPixelsPerInch := 96;
@@ -2287,6 +2322,7 @@ begin
   gFavoriteTabsList.Clear;
   glsDirHistory.Clear;
   glsMaskHistory.Clear;
+  glsSyncMaskHistory.Clear;
   glsSearchHistory.Clear;
   glsSearchPathHistory.Clear;
   glsReplaceHistory.Clear;

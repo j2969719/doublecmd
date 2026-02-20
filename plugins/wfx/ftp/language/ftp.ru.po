@@ -152,10 +152,11 @@ msgstr "Прокси"
 msgid "Properties"
 msgstr "Свойства"
 
-#: ftpfunc.addconnection
+#: ftplng.rsaddconnection
 msgid "Add connection"
 msgstr "Добавить соединение"
 
-#: ftpfunc.quickconnection
+#: ftplng.rsquickconnection
 msgid "Quick connection"
 msgstr "Быстрое подключение"
+

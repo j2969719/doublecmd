@@ -163,10 +163,11 @@ msgstr "프록시"
 msgid "Properties"
 msgstr "속성"
 
-#: ftpfunc.addconnection
+#: ftplng.rsaddconnection
 msgid "Add connection"
 msgstr ""
 
-#: ftpfunc.quickconnection
+#: ftplng.rsquickconnection
 msgid "Quick connection"
 msgstr ""
+
