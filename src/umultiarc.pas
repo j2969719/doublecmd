@@ -349,9 +349,10 @@ var
           FEnd:= TrimQuotes(IniFile.ReadString(Section, 'End', EmptyStr));
           for J:= 0 to 50 do
           begin
-            Format:= TrimQuotes(IniFile.ReadString(Section, 'Format' + IntToStr(J), EmptyStr));
+            Format:= IniFile.ReadString(Section, 'Format' + IntToStr(J), EmptyStr);
             if Format <> EmptyStr then
             begin
+              Format:= TrimQuotes(Format);
               if Import then
               begin
                 // mvv build stuff
@@ -364,8 +365,15 @@ var
               Break;
           end;
           FList:= TrimQuotes(IniFile.ReadString(Section, 'List', EmptyStr));
-          FExtract:= TrimQuotes(IniFile.ReadString(Section, 'Extract', EmptyStr));
-          FExtractWithoutPath:= TrimQuotes(IniFile.ReadString(Section, 'ExtractWithoutPath', EmptyStr));
+          FExtract:= TrimQuotes(IniFile.ReadString(Section, 'ExtractWithPath', EmptyStr));
+          if FExtract <> EmptyStr then
+            // tc addon
+            FExtractWithoutPath:= TrimQuotes(IniFile.ReadString(Section, 'Extract', EmptyStr))
+          else
+          begin
+            FExtract:= TrimQuotes(IniFile.ReadString(Section, 'Extract', EmptyStr));
+            FExtractWithoutPath:= TrimQuotes(IniFile.ReadString(Section, 'ExtractWithoutPath', EmptyStr));
+          end;
           FTest:= TrimQuotes(IniFile.ReadString(Section, 'Test', EmptyStr));
           FDelete:= TrimQuotes(IniFile.ReadString(Section, 'Delete', EmptyStr));
           FAdd:= TrimQuotes(IniFile.ReadString(Section, 'Add', EmptyStr));
@@ -465,19 +473,19 @@ begin
           IniFile.WriteString(Section, 'Format' + IntToStr(J), '"' + FFormat[J] + '"');
         end;
         if FList <> EmptyStr then
-          IniFile.WriteString(Section, 'List', '"' + FList + '"');
+          IniFile.WriteString(Section, 'List', FList);
         if FExtract <> EmptyStr then
-          IniFile.WriteString(Section, 'Extract', '"' + FExtract + '"');
+          IniFile.WriteString(Section, 'Extract', FExtract);
         if FExtractWithoutPath <> EmptyStr then
-          IniFile.WriteString(Section, 'ExtractWithoutPath', '"' + FExtractWithoutPath + '"');
+          IniFile.WriteString(Section, 'ExtractWithoutPath', FExtractWithoutPath);
         if FTest <> EmptyStr then
-          IniFile.WriteString(Section, 'Test', '"' + FTest + '"');
+          IniFile.WriteString(Section, 'Test', FTest);
         if FDelete <> EmptyStr then
-          IniFile.WriteString(Section, 'Delete', '"' + FDelete + '"');
+          IniFile.WriteString(Section, 'Delete', FDelete);
         if FAdd <> EmptyStr then
           IniFile.WriteString(Section, 'Add', FAdd);
         if FAddSelfExtract <> EmptyStr then
-          IniFile.WriteString(Section, 'AddSelfExtract', '"' + FAddSelfExtract + '"');
+          IniFile.WriteString(Section, 'AddSelfExtract', FAddSelfExtract);
         if FPasswordQuery <> EmptyStr then
           IniFile.WriteString(Section, 'PasswordQuery', '"' + FPasswordQuery + '"');
         // optional
@@ -486,7 +494,8 @@ begin
         for J:= 0 to FAskHistory.Count - 1 do
           IniFile.WriteString(Section, 'AskHistory' + IntToStr(J), FAskHistory[J]);
         IniFile.WriteInteger(Section, 'Flags', Integer(FFlags));
-        IniFile.WriteString(Section, 'SizeStripChars', FSizeStripChars);
+        if FSizeStripChars <> EmptyStr then
+          IniFile.WriteString(Section, 'SizeStripChars', FSizeStripChars);
         IniFile.WriteInteger(Section, 'FormMode', FFormMode);
         IniFile.WriteBool(Section, 'Enabled', FEnabled);
         if FOutput then
