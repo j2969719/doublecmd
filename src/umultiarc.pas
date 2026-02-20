@@ -339,7 +339,7 @@ var
         begin
           FPacker:= Section;
           FArchiver:= FixExeExt(TrimQuotes(IniFile.ReadString(Section, 'Archiver', EmptyStr)));
-          FFallBack:= TrimQuotes(IniFile.ReadString(Section, 'FallBackArchivers', EmptyStr));
+          FFallBack:= IniFile.ReadString(Section, 'FallBackArchivers', EmptyStr);
           FDescription:= TrimQuotes(IniFile.ReadString(Section, 'Description', EmptyStr));
           FID:= TrimQuotes(IniFile.ReadString(Section, 'ID', EmptyStr));
           FIDPos:= TrimQuotes(IniFile.ReadString(Section, 'IDPos', EmptyStr));
@@ -364,20 +364,20 @@ var
             else
               Break;
           end;
-          FList:= TrimQuotes(IniFile.ReadString(Section, 'List', EmptyStr));
-          FExtract:= TrimQuotes(IniFile.ReadString(Section, 'ExtractWithPath', EmptyStr));
+          FList:= IniFile.ReadString(Section, 'List', EmptyStr);
+          FExtract:= IniFile.ReadString(Section, 'ExtractWithPath', EmptyStr);
           if FExtract <> EmptyStr then
             // tc addon
-            FExtractWithoutPath:= TrimQuotes(IniFile.ReadString(Section, 'Extract', EmptyStr))
+            FExtractWithoutPath:= IniFile.ReadString(Section, 'Extract', EmptyStr)
           else
           begin
-            FExtract:= TrimQuotes(IniFile.ReadString(Section, 'Extract', EmptyStr));
-            FExtractWithoutPath:= TrimQuotes(IniFile.ReadString(Section, 'ExtractWithoutPath', EmptyStr));
+            FExtract:= IniFile.ReadString(Section, 'Extract', EmptyStr);
+            FExtractWithoutPath:= IniFile.ReadString(Section, 'ExtractWithoutPath', EmptyStr);
           end;
-          FTest:= TrimQuotes(IniFile.ReadString(Section, 'Test', EmptyStr));
-          FDelete:= TrimQuotes(IniFile.ReadString(Section, 'Delete', EmptyStr));
-          FAdd:= TrimQuotes(IniFile.ReadString(Section, 'Add', EmptyStr));
-          FAddSelfExtract:= TrimQuotes(IniFile.ReadString(Section, 'AddSelfExtract', EmptyStr));
+          FTest:= IniFile.ReadString(Section, 'Test', EmptyStr);
+          FDelete:= IniFile.ReadString(Section, 'Delete', EmptyStr);
+          FAdd:= IniFile.ReadString(Section, 'Add', EmptyStr);
+          FAddSelfExtract:= IniFile.ReadString(Section, 'AddSelfExtract', EmptyStr);
           FPasswordQuery:= TrimQuotes(IniFile.ReadString(Section, 'PasswordQuery', EmptyStr));
           // optional
           for J:= 0 to 50 do
@@ -396,6 +396,7 @@ var
             else
               Break;
           end;
+          FSizeStripChars:= IniFile.ReadString(Section, 'SizeStripChars', EmptyStr);
           FFlags:= TMultiArcFlags(IniFile.ReadInteger(Section, 'Flags', 0));
           FFormMode:= IniFile.ReadInteger(Section, 'FormMode', 0);
           FEnabled:= IniFile.ReadBool(Section, 'Enabled', True);
@@ -403,6 +404,13 @@ var
           FDebug:= IniFile.ReadBool(Section, 'Debug', False);
           if Import then
           begin
+            FList:= TrimQuotes(FList);
+            FExtract:= TrimQuotes(FExtract);
+            FExtractWithoutPath:= TrimQuotes(FExtractWithoutPath);
+            FAdd:= TrimQuotes(FAdd);
+            FAddSelfExtract:= TrimQuotes(FAddSelfExtract);
+            FDelete:= TrimQuotes(FDelete);
+            FTest:= TrimQuotes(FTest);
             if IniFile.ReadBool(Section, 'UnixPath', False) then
               FFormMode:= FFormMode or MAF_UNIX_PATH;
           end;
@@ -454,8 +462,6 @@ begin
       with MultiArcItem do
       begin
         IniFile.WriteString(Section, 'Archiver', FArchiver);
-        if FFallBack <> EmptyStr then
-          IniFile.WriteString(Section, 'FallBackArchivers', FFallBack);
         IniFile.WriteString(Section, 'Description', FDescription);
         if FID <> EmptyStr then
           IniFile.WriteString(Section, 'ID', FID);
@@ -489,6 +495,8 @@ begin
         if FPasswordQuery <> EmptyStr then
           IniFile.WriteString(Section, 'PasswordQuery', '"' + FPasswordQuery + '"');
         // optional
+        if FFallBack <> EmptyStr then
+          IniFile.WriteString(Section, 'FallBackArchivers', FFallBack);
         for J:= 0 to FIgnoreString.Count - 1 do
           IniFile.WriteString(Section, 'IgnoreString' + IntToStr(J), '"' + FIgnoreString[J] + '"');
         for J:= 0 to FAskHistory.Count - 1 do
