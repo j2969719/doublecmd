@@ -4,9 +4,9 @@ library AsarWcx;
 
 uses
 {$IFDEF UNIX}
-  cthreads,
+  cthreads, BaseUnix,
 {$ENDIF}
-  FPCAdds, SysUtils, Classes, uAsar, DCConvertEncoding, WcxPlugin;
+  FPCAdds, SysUtils, StrUtils, Classes, uAsar, DCConvertEncoding, WcxPlugin;
 
 threadvar
   gProcessDataProcW : TProcessDataProcW;
@@ -124,12 +124,17 @@ begin
 end;
 
 function PackFilesW(PackedFile: PWideChar; SubPath: PWideChar; SrcPath: PWideChar; AddList: PWideChar; Flags: Integer): Integer; dcpcall; export;
+const
+  UnpackedExts: array of string = ('.node', '.dll', '.exe', '.so', '.dylib');
+
 var
   AFileName: string;
   Asar: TAsarArchive;
   FileName: UnicodeString;
-  DiskPath, AsarPath: string;
   SubPathU, SrcPathU: string;
+  Unpacked: Boolean = False;
+  Executable: Boolean = False;
+  DiskPath, AsarPath, Ext: string;
 begin
   if (Flags and PK_PACK_MOVE_FILES) <> 0 then
     Exit(E_NOT_SUPPORTED);
@@ -157,6 +162,14 @@ begin
       else
       begin
         DiskPath:= SrcPathU + CeUtf16ToUtf8(FileName);
+{
+        Ext:= ExtractFileExt(DiskPath);
+        Unpacked:= MatchStr(Ext.ToLower, UnpackedExts);
+{$IFDEF UNIX}
+        Executable:= (fpAccess(DiskPath, X_OK) = 0);
+{$ENDIF}
+        Asar.AddFile(DiskPath, AsarPath, Unpacked, Executable);
+}
         Asar.AddFile(DiskPath, AsarPath);
       end;
 

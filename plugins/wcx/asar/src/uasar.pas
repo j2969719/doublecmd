@@ -18,9 +18,11 @@ type
     Size: Int64;
     Offset: Int64;
     DiskPath: string;
+    LinkTarget : string;
     IsExternal: Boolean;
     IsExecutable: Boolean;
     IsDir: Boolean;
+    IsLink: Boolean;
     SHA256: string;
   end;
   PAsarItem = ^TAsarItem;
@@ -42,12 +44,14 @@ type
     procedure WritePickle(Stream: TStream; JsonSize: Cardinal);
     procedure WritePadding(Stream: TStream);
     function DigestToHex(const D: array of byte): string;
-    procedure CalculateIntegrity(const AFilePath: string; out FullHash: string; out Blocks: TJSONArray);
+    function CalculateIntegrity(const AFilePath: string; out FullHash: string; out Blocks: TJSONArray): Integer;
     function GetCount: Integer;
     procedure SetProc(ProcessDataProc: TProcessDataProcW);
     procedure SetProcFile(FileName: string);
     function GetItem(Index: Integer): TAsarItem;
     function WriteData(Src, Dst: TStream; Size: Int64): Integer;
+    function GetProgress(Stream: TStream): Integer;
+    procedure RemoveSpaces(var JsonString: string);
   public
     constructor Create;
     destructor Destroy; override;
@@ -65,9 +69,10 @@ type
     function VerifyItem(Index: Integer): Integer;
 
     procedure AddFile(const DiskPath, AsarPath: string; External: Boolean = False; Executable: Boolean = False);
+    procedure AddLink(const LinkTarget, AsarPath: string);
     procedure AddDir(const AsarPath: string);
     procedure RemoveFile(const AsarPathMask: string);
-    function SaveTo(const FileName: string): Integer;
+    function SaveTo(const FileName: string; StoreHash: Boolean = True): Integer;
   end;
 
 implementation
@@ -158,7 +163,36 @@ begin
   end;
 end;
 
-procedure TAsarArchive.CalculateIntegrity(const AFilePath: string; out FullHash: string; out Blocks: TJSONArray);
+function TAsarArchive.GetProgress(Stream: TStream): Integer;
+const
+  FirstBar = 1000;
+var
+  Percent: Integer;
+begin
+  Percent:= 0;
+  if Stream.Size > 0 then
+    Percent:= Round(Stream.Position * 100 / Stream.Size);
+  Result:= -(FirstBar + Percent)
+end;
+
+procedure TAsarArchive.RemoveSpaces(var JsonString: string);
+var
+  I: integer = 1;
+  Quoted: boolean = False;
+begin
+  while I <= Length(JsonString) do
+  begin
+    if (JsonString[i] = '"') and ((I = 1) or (JsonString[I - 1] <> '\')) then
+      Quoted:= not Quoted;
+
+    if (JsonString[I] = ' ') and (not Quoted) then
+      Delete(JsonString, I, 1)
+    else
+      Inc(I);
+  end;
+end;
+
+function TAsarArchive.CalculateIntegrity(const AFilePath: string; out FullHash: string; out Blocks: TJSONArray): Integer;
 var
   Src: TFileStream;
   FullCtx, BlockCtx: TDCP_sha256;
@@ -166,6 +200,7 @@ var
   Buf: array[0..BUF_SIZE] of Byte;
   Read, BytesInBlock: Integer;
 begin
+  Result:= E_SUCCESS;
   Blocks:= TJSONArray.Create;
   Src:= TFileStream.Create(AFilePath, fmOpenRead or fmShareDenyNone);
   try
@@ -175,6 +210,12 @@ begin
     FullCtx.Init;
     BlockCtx.Init;
     while Src.Position < Src.Size do begin
+      if Assigned(FProcessDataProc) and
+         (FProcessDataProc(FProcFile, GetProgress(Src)) = 0) then
+      begin
+        Result:= E_EABORTED;
+        break;
+      end;
       Read:= Src.Read(Buf, SizeOf(Buf));
       FullCtx.Update(Buf, Read);
       BlockCtx.Update(Buf, Read);
@@ -187,8 +228,11 @@ begin
         BlockCtx.Init;
       end;
     end;
-    FullCtx.Final(FullDigest);
-    FullHash:= DigestToHex(FullDigest);
+    if Result = E_SUCCESS then
+    begin
+      FullCtx.Final(FullDigest);
+      FullHash:= DigestToHex(FullDigest);
+    end;
   finally
     Src.Free;
   end;
@@ -206,12 +250,17 @@ begin
   if not Assigned(FilesNode) then
     Exit;
 
+  if (FilesNode.Count = 0) and (ParentPath <> '') then
+    AddDir(ParentPath);
+
   for I:= 0 to FilesNode.Count - 1 do
   begin
     Name:= FilesNode.Names[I];
     Item:= FilesNode.Items[I] as TJSONObject;
     if Assigned(Item.Find('files')) then
       ParseJson(Item, ParentPath + Name + '/')
+    else if Assigned(Item.Find('link')) then
+      AddLink(Item.Strings['link'], ParentPath + Name)
     else
     begin
       New(NewItem);
@@ -341,8 +390,27 @@ begin
   New(NewItem);
   NewItem^.FileName:= AsarPath;
   NewItem^.DiskPath:= DiskPath;
+  NewItem^.LinkTarget:= '';
   NewItem^.IsExternal:= External;
   NewItem^.IsExecutable:= Executable;
+  NewItem^.IsLink:= False;
+  NewItem^.IsDir:= False;
+  FItems.Add(NewItem);
+end;
+
+procedure TAsarArchive.AddLink(const LinkTarget, AsarPath: string);
+var
+  NewItem: PAsarItem;
+begin
+  New(NewItem);
+  NewItem^.FileName:= AsarPath;
+  NewItem^.DiskPath:= '';
+  NewItem^.LinkTarget:= LinkTarget;
+  NewItem^.SHA256:= '';
+  NewItem^.Size:= -1;
+  NewItem^.IsExternal:= False;
+  NewItem^.IsExecutable:= False;
+  NewItem^.IsLink:= True;
   NewItem^.IsDir:= False;
   FItems.Add(NewItem);
 end;
@@ -354,9 +422,12 @@ begin
   New(NewItem);
   NewItem^.FileName:= AsarPath;
   NewItem^.DiskPath:= '';
+  NewItem^.LinkTarget:= '';
+  NewItem^.SHA256:= '';
   NewItem^.Size:= -1;
   NewItem^.IsExternal:= False;
   NewItem^.IsExecutable:= False;
+  NewItem^.IsLink:= False;
   NewItem^.IsDir:= True;
   FItems.Add(NewItem);
 end;
@@ -375,15 +446,16 @@ end;
 
 procedure TAsarArchive.WritePickle(Stream: TStream; JsonSize: Cardinal);
 var
-  u: Cardinal;
+  u, AlignedJsonSize: Cardinal;
 begin
-  u:= 4;
+  AlignedJsonSize := (JsonSize + 3) and not 3;
+  u := 4;
   Stream.WriteBuffer(u, 4);
-  u:= JsonSize + 8;
+  u := AlignedJsonSize + 8;
   Stream.WriteBuffer(u, 4);
-  u:= JsonSize + 4;
+  u := AlignedJsonSize + 4;
   Stream.WriteBuffer(u, 4);
-  u:= JsonSize;
+  u := JsonSize;
   Stream.WriteBuffer(u, 4);
 end;
 
@@ -432,7 +504,7 @@ begin
   end;
 end;
 
-function TAsarArchive.SaveTo(const FileName: string): Integer;
+function TAsarArchive.SaveTo(const FileName: string; StoreHash: Boolean = True): Integer;
 var
   I: Integer;
   Item: PAsarItem;
@@ -456,14 +528,16 @@ begin
         if Item^.IsDir then
         begin
           CurObj:= TJSONObject.Create;
+          CurObj.Add('files', TJSONObject.Create);
           AddToTree(Root, Item^.FileName, CurObj);
           continue;
         end;
 
-        if Item^.DiskPath <> '' then
+        if StoreHash and (Item^.DiskPath <> '') then
         begin
           Item^.Size:= mbFileSize(Item^.DiskPath);
-          CalculateIntegrity(Item^.DiskPath, Hash, Blocks);
+          ProcFile:= Item^.FileName;
+          Result:= CalculateIntegrity(Item^.DiskPath, Hash, Blocks);
         end
         else
         begin
@@ -471,71 +545,87 @@ begin
           Blocks:= nil;
         end;
 
+        if Result <> E_SUCCESS then
+          break;
+
         CurObj:= TJSONObject.Create;
-        CurObj.Add('size', Item^.Size);
-        if Item^.IsExternal then
-          CurObj.Add('unpacked', True)
+        if Item^.IsLink then
+          CurObj.Add('link', Item^.LinkTarget)
         else
         begin
-          CurObj.Add('offset', IntToStr(CurOff));
-          CurOff:= Align4(CurOff + Item^.Size);
+          CurObj.Add('size', Item^.Size);
+          if Item^.IsExternal then
+            CurObj.Add('unpacked', True)
+          else
+          begin
+            CurObj.Add('offset', IntToStr(CurOff));
+            //CurOff:= Align4(CurOff + Item^.Size);
+            CurOff:= CurOff + Item^.Size;
+          end;
         end;
 
-        if Hash <> '' then
+        if StoreHash and (Hash <> '') then
         begin
           Intgr:= TJSONObject.Create;
           Intgr.Add('algorithm', 'SHA256');
           Intgr.Add('hash', Hash);
           if Assigned(Blocks) then
+          begin
+            Intgr.Add('blockSize', ASAR_BLOCK_SIZE);
             Intgr.Add('blocks', Blocks);
+          end;
           CurObj.Add('integrity', Intgr);
         end;
 
-        if Item^.IsExecutable then
+        if not Item^.IsLink and Item^.IsExecutable then
           CurObj.Add('executable', True);
 
         AddToTree(Root, Item^.FileName, CurObj);
       end;
 
-      JsonStr:= Root.AsJSON;
-      WritePickle(Dst, Length(JsonStr));
-      Dst.WriteBuffer(Pointer(JsonStr)^, Length(JsonStr));
-      WritePadding(Dst);
-
-      for I:= 0 to FItems.Count - 1 do
+      if Result = E_SUCCESS then
       begin
-        Item:= FItems[I];
-        ProcFile:= Item^.FileName;
-        if Item^.IsDir then
-        begin
-          continue;
-        end;
+        JsonStr:= Root.AsJSON;
+        RemoveSpaces(JsonStr);
+        WritePickle(Dst, Length(JsonStr));
+        Dst.WriteBuffer(Pointer(JsonStr)^, Length(JsonStr));
+        WritePadding(Dst);
 
-        if Item^.DiskPath <> '' then
-          Src:= TFileStream.Create(Item^.DiskPath, fmOpenRead)
-        else
+        for I:= 0 to FItems.Count - 1 do
         begin
-          Src:= TMemoryStream.Create;
-          ExtractItem(I, Src);
-          Src.Position:= 0;
-        end;
+          Item:= FItems[I];
+          ProcFile:= Item^.FileName;
+          if Item^.IsDir or Item^.IsLink then
+          begin
+            continue;
+          end;
 
-        if Item^.IsExternal then
-        begin
-          DestPath:= UnpackedDir + PathDelim + StringReplace(Item^.FileName, '/', PathDelim, [rfReplaceAll]);
-          ForceDirectories(ExtractFilePath(DestPath));
-          External:= TFileStream.Create(DestPath, fmCreate);
-          Result:= WriteData(Src, External, Src.Size);
-          External.Free;
-        end
-        else
-        begin
-          Result:= WriteData(Src, Dst, Src.Size);
-          WritePadding(Dst);
+          if Item^.DiskPath <> '' then
+            Src:= TFileStream.Create(Item^.DiskPath, fmOpenRead)
+          else
+          begin
+            Src:= TMemoryStream.Create;
+            ExtractItem(I, Src);
+            Src.Position:= 0;
+          end;
+
+          if Item^.IsExternal then
+          begin
+            DestPath:= UnpackedDir + PathDelim + StringReplace(Item^.FileName, '/', PathDelim, [rfReplaceAll]);
+            ForceDirectories(ExtractFilePath(DestPath));
+            External:= TFileStream.Create(DestPath, fmCreate);
+            Result:= WriteData(Src, External, Src.Size);
+            External.Free;
+          end
+          else
+          begin
+            Result:= WriteData(Src, Dst, Src.Size);
+            //WritePadding(Dst);
+          end;
+          Src.Free;
+          if Result <> E_SUCCESS then
+            break;
         end;
-        Src.Free;
-        if Result <> E_SUCCESS then
-          break;
       end;
     finally
       Root.Free;
