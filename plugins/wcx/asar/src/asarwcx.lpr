@@ -56,18 +56,38 @@ begin
   HeaderData.UnpSizeHigh:= Int64Rec(AFile.Size).Hi;
   HeaderData.PackSize:= HeaderData.UnpSize;
   HeaderData.PackSizeHigh:= HeaderData.UnpSizeHigh;
+{$IF DEFINED(UNIX)}
+  if AFile.IsDir then
+    HeaderData.FileAttr:= S_IFDIR
+  else if AFile.IsLink then
+    HeaderData.FileAttr:= S_IFLNK
+  else
+    HeaderData.FileAttr:= S_IFREG;
+
+  if AFile.IsExecutable or AFile.IsDir then
+    HeaderData.FileAttr:= HeaderData.FileAttr or &0755
+  else
+    HeaderData.FileAttr:= HeaderData.FileAttr or &0644;
+{$ELSEIF DEFINED(MSWINDOWS)}
+  if AFile.IsDir then
+    HeaderData.FileAttr:= HeaderData.FileAttr or faDirectory
+  else if AFile.IsLink then
+    HeaderData.FileAttr:= HeaderData.FileAttr or faSymLink;
+{$ENDIF}
   Result:= E_SUCCESS;
 end;
 
 function ProcessFileW(hArcData : TArcHandle; Operation : Integer; DestPath, DestName : PWideChar) : Integer; dcpcall;
 var
+  AFile: TAsarItem;
   DestNameUtf8: String;
   AHandle: TRecord absolute hArcData;
   Dst: TFileStream;
 begin
   Result:= E_SUCCESS;
   DestNameUtf8:= CeUtf16ToUtf8(UnicodeString(DestName));
-  AHandle.Asar.ProcFile:= AHandle.Asar.Items[AHandle.Index].FileName;
+  AFile:= AHandle.Asar.Items[AHandle.Index];
+  AHandle.Asar.ProcFile:= AFile.FileName;
 
   case Operation of
   PK_TEST:
@@ -78,9 +98,22 @@ begin
   PK_EXTRACT:
     begin
       try
-        Dst:= TFileStream.Create(DestNameUtf8, fmCreate);
-        Result:= AHandle.Asar.ExtractItem(AHandle.Index, Dst);
-        Dst.Free;
+        if AFile.IsLink then
+        begin
+          Result:= E_NOT_SUPPORTED;
+        end
+        else
+        begin
+          Dst:= TFileStream.Create(DestNameUtf8, fmCreate);
+          Result:= AHandle.Asar.ExtractItem(AHandle.Index, Dst);
+          Dst.Free;
+{
+{$IFDEF UNIX}
+          if AFile.IsExecutable then
+            fpChmod(DestNameUtf8, &0755);
+{$ENDIF}
+}
+        end;
       except
         Result:= E_EWRITE;
       end;

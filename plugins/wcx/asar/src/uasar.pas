@@ -34,7 +34,7 @@ type
     FStream: TFileStream;
     FItems: TFPList;
     FDataStart: Int64;
-    FProcFile: PWideChar;
+    FProcFile: UnicodeString;
     FProcessDataProc: TProcessDataProcW;
 
     procedure ClearItems;
@@ -126,7 +126,7 @@ end;
 
 procedure TAsarArchive.SetProcFile(FileName: string);
 begin
-  FProcFile:= PWideChar(CeUtf8ToUtf16(FileName));
+  FProcFile:= CeUtf8ToUtf16(FileName);
 end;
 
 function TAsarArchive.GetItem(Index: Integer): TAsarItem;
@@ -150,7 +150,8 @@ begin
 
       Read:= Src.Read(Buf, Len);
 
-      if Assigned(FProcessDataProc) and (FProcessDataProc(FProcFile, Read) = 0) then
+      if Assigned(FProcessDataProc) and
+         (FProcessDataProc(PWideChar(FProcFile), Read) = 0) then
         Exit(E_EABORTED);
       if Read = 0 then
         break;
@@ -211,7 +212,7 @@ begin
     BlockCtx.Init;
     while Src.Position < Src.Size do begin
       if Assigned(FProcessDataProc) and
-         (FProcessDataProc(FProcFile, GetProgress(Src)) = 0) then
+         (FProcessDataProc(PWideChar(FProcFile), GetProgress(Src)) = 0) then
       begin
         Result:= E_EABORTED;
         break;
@@ -264,6 +265,11 @@ begin
     else
     begin
       New(NewItem);
+      NewItem^.IsDir:= False;
+      NewItem^.IsLink:= False;
+      NewItem^.LinkTarget:= '';
+      NewItem^.DiskPath:= '';
+
       NewItem^.FileName:= ParentPath + Name;
       NewItem^.Size:= Item.Int64s['size'];
 
