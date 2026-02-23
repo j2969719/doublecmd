@@ -88,16 +88,15 @@ begin
   DestNameUtf8:= CeUtf16ToUtf8(UnicodeString(DestName));
   AFile:= AHandle.Asar.Items[AHandle.Index];
   AHandle.Asar.ProcFile:= AFile.FileName;
+  try
+    case Operation of
+    PK_TEST:
+      begin
+        Result:= AHandle.Asar.VerifyItem(AHandle.Index);
+      end;
 
-  case Operation of
-  PK_TEST:
-    begin
-      Result:= AHandle.Asar.VerifyItem(AHandle.Index);
-    end;
-
-  PK_EXTRACT:
-    begin
-      try
+    PK_EXTRACT:
+      begin
         if AFile.IsLink then
         begin
           Result:= E_NOT_SUPPORTED;
@@ -114,15 +113,22 @@ begin
 {$ENDIF}
 }
         end;
-      except
-        Result:= E_EWRITE;
+      end;
+
+    PK_SKIP:
+      begin
+
       end;
     end;
-
-  PK_SKIP:
-    begin
-
-    end;
+  except
+    on E: EFOpenError do
+      Result:= E_EOPEN;
+    on E: EReadError do
+      Result:= E_EREAD;
+    on E: EWriteError do
+      Result:= E_EWRITE;
+    on E: Exception do
+      Result:= E_EWRITE;
   end;
   Inc(AHandle.Index);
 end;
