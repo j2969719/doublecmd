@@ -5,7 +5,7 @@ unit uAsar;
 interface
 
 uses
-  Classes, SysUtils, fpjson, jsonparser, DCPsha256, Masks,
+  Classes, SysUtils, fpjson, jsonparser, DCPsha256, StrUtils,
   DCOSUtils, DCConvertEncoding, WcxPlugin;
 
 const
@@ -24,6 +24,7 @@ type
     IsDir: Boolean;
     IsLink: Boolean;
     SHA256: string;
+    Integrity: TJSONObject;
   end;
   PAsarItem = ^TAsarItem;
 
@@ -35,6 +36,8 @@ type
     FItems: TFPList;
     FDataStart: Int64;
     FProcFile: UnicodeString;
+    FStoreHash: Boolean;
+    FCloseAfterSave: Boolean;
     FProcessDataProc: TProcessDataProcW;
 
     procedure ClearItems;
@@ -52,6 +55,9 @@ type
     function WriteData(Src, Dst: TStream; Size: Int64): Integer;
     function GetProgress(Stream: TStream): Integer;
     procedure RemoveSpaces(var JsonString: string);
+    function RemoveTrailingSlash(const Path: string): string;
+    function InitItem(const AsarPath: string; RemoveOld: Boolean = True): PAsarItem;
+    function IsUpdatingSelf(const FileName: string): Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -61,18 +67,22 @@ type
 
     property ProcessDataProc: TProcessDataProcW write SetProc;
     property ProcFile: string write SetProcFile;
+    property StoreHash: Boolean read FStoreHash write FStoreHash;
+    property CloseAfterSave: Boolean read FCloseAfterSave write FCloseAfterSave;
 
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TAsarItem read GetItem; default;
+
+    procedure Sort;
 
     function ExtractItem(Index: Integer; Dest: TStream): Integer;
     function VerifyItem(Index: Integer): Integer;
 
     procedure AddFile(const DiskPath, AsarPath: string; External: Boolean = False; Executable: Boolean = False);
-    procedure AddLink(const LinkTarget, AsarPath: string);
+    procedure AddLink(const LinkTarget, AsarPath: string; RemoveOld: Boolean = True);
     procedure AddDir(const AsarPath: string);
-    procedure RemoveFile(const AsarPathMask: string);
-    function SaveTo(const FileName: string; StoreHash: Boolean = True): Integer;
+    procedure RemoveFile(const AsarPath: string);
+    function SaveTo(const FileName: string): Integer;
   end;
 
 implementation
@@ -81,6 +91,8 @@ constructor TAsarArchive.Create;
 begin
   FItems:= TFPList.Create;
   FProcFile:= '';
+  FStoreHash:= True;
+  FCloseAfterSave:= False;
 end;
 
 destructor TAsarArchive.Destroy;
@@ -96,7 +108,11 @@ var
   I: Integer;
 begin
   for I:= 0 to FItems.Count - 1 do
+  begin
+    if Assigned(PAsarItem(FItems[I])^.Integrity) then
+      PAsarItem(FItems[I])^.Integrity.Free;
     Dispose(PAsarItem(FItems[I]));
+  end;
   FItems.Clear;
 end;
 
@@ -117,6 +133,13 @@ end;
 function TAsarArchive.GetCount: Integer;
 begin
   Result:= FItems.Count;
+end;
+
+function TAsarArchive.IsUpdatingSelf(const FileName: string): Boolean;
+begin
+  Result:= False;
+  if Assigned(FStream) then
+    Result:= SameFileName(ExpandFileName(FStream.FileName), ExpandFileName(FileName));
 end;
 
 procedure TAsarArchive.SetProc(ProcessDataProc: TProcessDataProcW);
@@ -193,6 +216,13 @@ begin
   end;
 end;
 
+function TAsarArchive.RemoveTrailingSlash(const Path: string): string;
+begin
+  Result:= Path;
+  while (Result <> '') and (Result[Length(Result)] = '/') do
+    Delete(Result, Length(Result), 1);
+end;
+
 function TAsarArchive.CalculateIntegrity(const AFilePath: string; out FullHash: string; out Blocks: TJSONArray): Integer;
 var
   Src: TFileStream;
@@ -210,6 +240,16 @@ begin
     BlockCtx:= TDCP_sha256.Create(nil);
     FullCtx.Init;
     BlockCtx.Init;
+
+    if Src.Size = 0 then  // ¯\_(ツ)_/¯
+    begin
+      BlockCtx.Final(BlockDigest);
+      Blocks.Add(DigestToHex(BlockDigest));
+      FullCtx.Final(FullDigest);
+      FullHash := DigestToHex(FullDigest);
+      Exit;
+    end;
+
     while Src.Position < Src.Size do begin
       if Assigned(FProcessDataProc) and
          (FProcessDataProc(PWideChar(FProcFile), GetProgress(Src)) = 0) then
@@ -251,7 +291,8 @@ begin
   if not Assigned(FilesNode) then
     Exit;
 
-  if (FilesNode.Count = 0) and (ParentPath <> '') then
+  //if (FilesNode.Count = 0) and (ParentPath <> '') then
+  if (ParentPath <> '') then
     AddDir(ParentPath);
 
   for I:= 0 to FilesNode.Count - 1 do
@@ -261,16 +302,10 @@ begin
     if Assigned(Item.Find('files')) then
       ParseJson(Item, ParentPath + Name + '/')
     else if Assigned(Item.Find('link')) then
-      AddLink(Item.Strings['link'], ParentPath + Name)
+      AddLink(Item.Strings['link'], ParentPath + Name, False)
     else
     begin
-      New(NewItem);
-      NewItem^.IsDir:= False;
-      NewItem^.IsLink:= False;
-      NewItem^.LinkTarget:= '';
-      NewItem^.DiskPath:= '';
-
-      NewItem^.FileName:= ParentPath + Name;
+      NewItem:= InitItem(ParentPath + Name, False);
       NewItem^.Size:= Item.Int64s['size'];
 
       if Item.Find('executable') <> nil then
@@ -279,22 +314,17 @@ begin
         NewItem^.IsExecutable:= False;
 
       if Item.Find('unpacked') <> nil then
-        NewItem^.IsExternal:= Item.Booleans['unpacked']
-      else
-        NewItem^.IsExternal:= False;
+        NewItem^.IsExternal:= Item.Booleans['unpacked'];
 
-      if NewItem^.IsExternal then
-        NewItem^.Offset:= -1
-      else
+      if not NewItem^.IsExternal then
         NewItem^.Offset:= StrToInt64(Item.Strings['offset']);
 
       Intgr:= Item.Find('integrity') as TJSONObject;
       if Assigned(Intgr) then
-        NewItem^.SHA256:= Intgr.Strings['hash']
-      else
-        NewItem^.SHA256:= '';
-
-      NewItem^.DiskPath:= '';
+      begin
+        NewItem^.SHA256:= Intgr.Strings['hash'];
+        NewItem^.Integrity := Intgr.Clone as TJSONObject;
+      end;
 
       FItems.Add(NewItem);
     end;
@@ -331,6 +361,17 @@ procedure TAsarArchive.Close;
 begin
   if Assigned(FStream) then
     FreeAndNil(FStream);
+end;
+
+function CompareAsarItems(Item1, Item2: Pointer): Integer;
+begin
+  Result:= CompareText(PAsarItem(Item1)^.FileName, PAsarItem(Item2)^.FileName);
+end;
+
+procedure TAsarArchive.Sort;
+begin
+  if FItems.Count > 1 then
+    FItems.Sort(@CompareAsarItems);
 end;
 
 function TAsarArchive.ExtractItem(Index: Integer; Dest: TStream): Integer;
@@ -389,65 +430,84 @@ begin
   end;
 end;
 
+function TAsarArchive.InitItem(const AsarPath: string; RemoveOld: Boolean = True): PAsarItem;
+begin
+  if RemoveOld then
+    RemoveFile(AsarPath);
+
+  New(Result);
+  Result^.FileName:= AsarPath;
+  Result^.Size:= 0;
+  Result^.Offset:= -1;
+  Result^.DiskPath:= '';
+  Result^.SHA256:= '';
+  Result^.LinkTarget:= '';
+  Result^.IsExternal:= False;
+  Result^.IsDir:= False;
+  Result^.IsLink:= False;
+  Result^.IsExecutable:= False;
+  Result^.Integrity:= nil;
+end;
+
 procedure TAsarArchive.AddFile(const DiskPath, AsarPath: string; External: Boolean = False; Executable: Boolean = False);
 var
   NewItem: PAsarItem;
 begin
-  New(NewItem);
-  NewItem^.FileName:= AsarPath;
+  NewItem:= InitItem(AsarPath);
   NewItem^.DiskPath:= DiskPath;
-  NewItem^.LinkTarget:= '';
   NewItem^.IsExternal:= External;
   NewItem^.IsExecutable:= Executable;
-  NewItem^.IsLink:= False;
-  NewItem^.IsDir:= False;
   FItems.Add(NewItem);
 end;
 
-procedure TAsarArchive.AddLink(const LinkTarget, AsarPath: string);
+procedure TAsarArchive.AddLink(const LinkTarget, AsarPath: string; RemoveOld: Boolean = True);
 var
   NewItem: PAsarItem;
 begin
-  New(NewItem);
+  NewItem:= InitItem(AsarPath, RemoveOld);
   NewItem^.FileName:= AsarPath;
-  NewItem^.DiskPath:= '';
   NewItem^.LinkTarget:= LinkTarget;
-  NewItem^.SHA256:= '';
-  NewItem^.Size:= -1;
-  NewItem^.IsExternal:= False;
-  NewItem^.IsExecutable:= False;
   NewItem^.IsLink:= True;
-  NewItem^.IsDir:= False;
   FItems.Add(NewItem);
 end;
 
 procedure TAsarArchive.AddDir(const AsarPath: string);
 var
+  Path: string;
   NewItem: PAsarItem;
 begin
-  New(NewItem);
-  NewItem^.FileName:= AsarPath;
-  NewItem^.DiskPath:= '';
-  NewItem^.LinkTarget:= '';
-  NewItem^.SHA256:= '';
-  NewItem^.Size:= -1;
-  NewItem^.IsExternal:= False;
-  NewItem^.IsExecutable:= False;
-  NewItem^.IsLink:= False;
+  Path:= RemoveTrailingSlash(AsarPath);
+  NewItem:= InitItem(Path, False);
   NewItem^.IsDir:= True;
   FItems.Add(NewItem);
 end;
 
-procedure TAsarArchive.RemoveFile(const AsarPathMask: string);
+procedure TAsarArchive.RemoveFile(const AsarPath: string);
 var
   i: Integer;
+  Path, Prefix: string;
 begin
+  if EndsText('/*.*', AsarPath) then
+  begin
+    Path:= Copy(AsarPath, 1, Length(AsarPath) - 4);
+    Prefix:= Copy(AsarPath, 1, Length(AsarPath) - 3);
+  end
+  else
+  begin
+    Path:= AsarPath;
+    Prefix:= Path + '/';
+  end;
   for i:= FItems.Count - 1 downto 0 do
-    if MatchesMask(PAsarItem(FItems[i])^.FileName, AsarPathMask, (PathDelim = '/')) then
+  begin
+    if StartsText(Prefix, PAsarItem(FItems[i])^.FileName) or
+       SameText(PAsarItem(FItems[i])^.FileName, Path) then
     begin
+      if Assigned(PAsarItem(FItems[i])^.Integrity) then
+        PAsarItem(FItems[i])^.Integrity.Free;
       Dispose(PAsarItem(FItems[i]));
       FItems.Delete(i);
     end;
+  end;
 end;
 
 procedure TAsarArchive.WritePickle(Stream: TStream; JsonSize: Cardinal);
@@ -476,11 +536,15 @@ var
   I: Integer;
   PartName: string;
   Parts: TStringArray;
-  CurrentNode, FilesNode: TJSONObject;
+  CurrentNode, FilesNode, Existing: TJSONObject;
 begin
   CurrentNode:= Root;
   Parts:= VirtualPath.Split(['/'], TStringSplitOptions.ExcludeEmpty);
-
+  if Length(Parts) = 0 then
+  begin
+    FileObj.Free;
+    Exit;
+  end;
 
   for I:= 0 to High(Parts) do
   begin
@@ -493,161 +557,200 @@ begin
       CurrentNode.Add('files', FilesNode);
     end;
 
+    Existing:= FilesNode.Find(PartName) as TJSONObject;
+
     if I = High(Parts) then
     begin
-      if Assigned(FileObj) then
-        FilesNode.Add(PartName, FileObj)
-      else if not Assigned(FilesNode.Find(PartName)) then
-        FilesNode.Add(PartName, TJSONObject.Create);
+      if Assigned(Existing) then
+      begin
+        if (FileObj.Find('files') <> nil) then
+        begin
+          if not Assigned(Existing.Find('files')) then
+          begin
+            Existing.Clear;
+            Existing.Add('files', TJSONObject.Create);
+          end;
+          FileObj.Free;
+        end
+        else
+        begin
+          FilesNode.Delete(PartName);
+          FilesNode.Add(PartName, FileObj);
+        end;
+      end
+      else
+        FilesNode.Add(PartName, FileObj);
     end
     else
     begin
-      if not Assigned(FilesNode.Find(PartName)) then
-        FilesNode.Add(PartName, TJSONObject.Create);
+      if not Assigned(Existing) then
+      begin
+        Existing:= TJSONObject.Create;
+        FilesNode.Add(PartName, Existing);
+      end;
 
-      CurrentNode:= FilesNode.Objects[PartName];
+      CurrentNode:= Existing;
     end;
   end;
 end;
 
-function TAsarArchive.SaveTo(const FileName: string; StoreHash: Boolean = True): Integer;
+function TAsarArchive.SaveTo(const FileName: string): Integer;
 var
-  I: Integer;
+  I: integer;
+  Needed: Int64;
   Item: PAsarItem;
-  CurOff: Int64 = 0;
+  CurOff: int64 = 0;
   Blocks: TJSONArray;
   Dst, Src, External: TStream;
   Root, FilesNode, CurObj, Intgr: TJSONObject;
   JsonStr, Hash, TmpName, UnpackedDir, DestPath: string;
+  SelfUpdate: Boolean;
 begin
   Result:= E_SUCCESS;
   UnpackedDir:= FileName + '.unpacked';
+  SelfUpdate:= IsUpdatingSelf(FileName);
   TmpName:= ChangeFileExt(FileName, '') + FormatDateTime('_yyyymmdd_hhnn', Now) + '.tmp';
+
+  Dst:= TFileStream.Create(TmpName, fmCreate);
   try
-    Dst:= TFileStream.Create(TmpName, fmCreate);
-    try
-      Root:= TJSONObject.Create;
-      FilesNode:= TJSONObject.Create;
-      for I:= 0 to FItems.Count - 1 do
+    Root:= TJSONObject.Create;
+    FilesNode:= TJSONObject.Create;
+    for I:= 0 to FItems.Count - 1 do
+    begin
+      Item:= FItems[I];
+      CurObj:= TJSONObject.Create;
+
+      if Item^.IsDir then
+        CurObj.Add('files', TJSONObject.Create)
+      else if Item^.IsLink then
+        CurObj.Add('link', Item^.LinkTarget)
+      else
       begin
-        Item:= FItems[I];
-        if Item^.IsDir then
-        begin
-          CurObj:= TJSONObject.Create;
-          CurObj.Add('files', TJSONObject.Create);
-          AddToTree(Root, Item^.FileName, CurObj);
-          continue;
-        end;
-
-        if StoreHash and (Item^.DiskPath <> '') then
-        begin
+        if (Item^.DiskPath <> '') then
           Item^.Size:= mbFileSize(Item^.DiskPath);
-          ProcFile:= Item^.FileName;
-          Result:= CalculateIntegrity(Item^.DiskPath, Hash, Blocks);
-        end
+
+        CurObj.Add('size', Item^.Size);
+        if Item^.IsExternal then
+          CurObj.Add('unpacked', True)
         else
         begin
-          Hash:= Item^.SHA256;
-          Blocks:= nil;
+          CurObj.Add('offset', IntToStr(CurOff));
+          //CurOff:= Align4(CurOff + Item^.Size);
+          CurOff:= CurOff + Item^.Size;
         end;
 
-        if Result <> E_SUCCESS then
-          break;
-
-        CurObj:= TJSONObject.Create;
-        if Item^.IsLink then
-          CurObj.Add('link', Item^.LinkTarget)
-        else
+        if StoreHash then
         begin
-          CurObj.Add('size', Item^.Size);
-          if Item^.IsExternal then
-            CurObj.Add('unpacked', True)
-          else
+          if (Item^.DiskPath <> '') then
           begin
-            CurObj.Add('offset', IntToStr(CurOff));
-            //CurOff:= Align4(CurOff + Item^.Size);
-            CurOff:= CurOff + Item^.Size;
-          end;
-        end;
+            ProcFile:= Item^.FileName;
+            Result:= CalculateIntegrity(Item^.DiskPath, Hash, Blocks);
 
-        if StoreHash and (Hash <> '') then
-        begin
-          Intgr:= TJSONObject.Create;
-          Intgr.Add('algorithm', 'SHA256');
-          Intgr.Add('hash', Hash);
-          if Assigned(Blocks) then
-          begin
-            Intgr.Add('blockSize', ASAR_BLOCK_SIZE);
-            Intgr.Add('blocks', Blocks);
-          end;
-          CurObj.Add('integrity', Intgr);
+            if Result <> E_SUCCESS then
+              break;
+
+            Intgr:= TJSONObject.Create;
+            Intgr.Add('algorithm', 'SHA256');
+            Intgr.Add('hash', Hash);
+            if Assigned(Blocks) then
+            begin
+              Intgr.Add('blockSize', ASAR_BLOCK_SIZE);
+              Intgr.Add('blocks', Blocks);
+            end;
+            CurObj.Add('integrity', Intgr);
+          end
+          else if Assigned(Item^.Integrity) then
+            CurObj.Add('integrity', Item^.Integrity.Clone);
         end;
 
         if not Item^.IsLink and Item^.IsExecutable then
           CurObj.Add('executable', True);
-
-        AddToTree(Root, Item^.FileName, CurObj);
       end;
 
-      if Result = E_SUCCESS then
-      begin
-        JsonStr:= Root.AsJSON;
-        RemoveSpaces(JsonStr);
-        WritePickle(Dst, Length(JsonStr));
-        Dst.WriteBuffer(Pointer(JsonStr)^, Length(JsonStr));
-        WritePadding(Dst);
-
-        for I:= 0 to FItems.Count - 1 do
-        begin
-          Item:= FItems[I];
-          ProcFile:= Item^.FileName;
-          if Item^.IsDir or Item^.IsLink then
-          begin
-            continue;
-          end;
-
-          if Item^.DiskPath <> '' then
-            Src:= TFileStream.Create(Item^.DiskPath, fmOpenRead)
-          else
-          begin
-            Src:= TMemoryStream.Create;
-            ExtractItem(I, Src);
-            Src.Position:= 0;
-          end;
-
-          if Item^.IsExternal then
-          begin
-            DestPath:= UnpackedDir + PathDelim + StringReplace(Item^.FileName, '/', PathDelim, [rfReplaceAll]);
-            ForceDirectories(ExtractFilePath(DestPath));
-            External:= TFileStream.Create(DestPath, fmCreate);
-            Result:= WriteData(Src, External, Src.Size);
-            External.Free;
-          end
-          else
-          begin
-            Result:= WriteData(Src, Dst, Src.Size);
-            //WritePadding(Dst);
-          end;
-          Src.Free;
-          if Result <> E_SUCCESS then
-            break;
-        end;
-      end;
-    finally
-      Root.Free;
-      Dst.Free;
-
-      if Result = E_SUCCESS then
-      begin
-        DeleteFile(FileName);
-        RenameFile(TmpName, FileName);
-      end
-      else
-        DeleteFile(TmpName);
+      AddToTree(Root, Item^.FileName, CurObj);
     end;
-  except
-    Result:= E_EWRITE;
+
+    if Result = E_SUCCESS then
+    begin
+      JsonStr:= Root.AsJSON;
+      RemoveSpaces(JsonStr);
+
+      Needed:= 16 + Align4(Length(JsonStr)) + CurOff;
+      Dst.Size:= Needed;
+      Dst.Position:= 0;
+
+      if Dst.Size < Needed then
+      begin
+        Result:= E_ECREATE;
+        raise Exception.Create(EmptyStr);
+      end;
+
+      WritePickle(Dst, Length(JsonStr));
+      Dst.WriteBuffer(Pointer(JsonStr)^, Length(JsonStr));
+      WritePadding(Dst);
+
+      for I:= 0 to FItems.Count - 1 do
+      begin
+        Item:= FItems[I];
+        ProcFile:= Item^.FileName;
+        if Item^.IsDir or Item^.IsLink then
+        begin
+          continue;
+        end;
+
+        if Item^.DiskPath <> '' then
+          Src:= TFileStream.Create(Item^.DiskPath, fmOpenRead)
+        else
+        begin
+          Src:= TMemoryStream.Create;
+          ExtractItem(I, Src);
+          Src.Position:= 0;
+        end;
+
+        if Item^.IsExternal then
+        begin
+          DestPath:= UnpackedDir + PathDelim +
+            StringReplace(Item^.FileName, '/', PathDelim, [rfReplaceAll]);
+          ForceDirectories(ExtractFilePath(DestPath));
+          External:= TFileStream.Create(DestPath, fmCreate);
+          Result:= WriteData(Src, External, Src.Size);
+          External.Free;
+        end
+        else
+        begin
+          Result:= WriteData(Src, Dst, Src.Size);
+          //WritePadding(Dst);
+        end;
+        Src.Free;
+        if Result <> E_SUCCESS then
+          break;
+      end;
+    end;
+  finally
+    Root.Free;
+    Dst.Free;
   end;
+
+  if SelfUpdate or CloseAfterSave then
+    Close;
+
+  if Result = E_SUCCESS then
+  begin
+    if FileExists(FileName) then
+      DeleteFile(FileName);
+
+    if not RenameFile(TmpName, FileName) then
+    begin
+      DeleteFile(TmpName);
+      //raise Exception.Create(EmptyStr);
+      Exit(E_EWRITE);
+    end;
+
+    if SelfUpdate and not CloseAfterSave then
+      Open(FileName);
+  end
+  else
+    DeleteFile(TmpName);
 end;
 
 end.

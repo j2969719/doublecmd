@@ -106,12 +106,12 @@ begin
           Dst:= TFileStream.Create(DestNameUtf8, fmCreate);
           Result:= AHandle.Asar.ExtractItem(AHandle.Index, Dst);
           Dst.Free;
-{
+
 {$IFDEF UNIX}
           if AFile.IsExecutable then
             fpChmod(DestNameUtf8, &0755);
 {$ENDIF}
-}
+
         end;
       end;
 
@@ -182,42 +182,49 @@ begin
   AFileName:= CeUtf16ToUtf8(UnicodeString(PackedFile));
   SubPathU:= CeUtf16ToUtf8(UnicodeString(SubPath));
   SrcPathU:= CeUtf16ToUtf8(UnicodeString(SrcPath));
-  Asar:= TAsarArchive.Create;
+
+  if SubPathU <> EmptyStr then
+    SubPathU:= StringReplace(SubPathU, PathDelim, '/', [rfReplaceAll]) + '/';
   try
-    Asar.Open(AFileName);
-    Asar.ProcessDataProc:= gProcessDataProcW;
+    Asar:= TAsarArchive.Create;
+    try
+      Asar.Open(AFileName);
+      Asar.ProcessDataProc:= gProcessDataProcW;
+      //Asar.CloseAfterSave:= True;
 
-    while AddList^ <> #0 do
-    begin
-      FileName:= UnicodeString(AddList);
-      AsarPath:= SubPathU + CeUtf16ToUtf8(FileName);
-      AsarPath:= StringReplace(AsarPath, PathDelim, '/', [rfReplaceAll]);
+      while AddList^ <> #0 do
+      begin
+        FileName:= UnicodeString(AddList);
+        AsarPath:= SubPathU + StringReplace(CeUtf16ToUtf8(FileName), PathDelim, '/', [rfReplaceAll]);
 
-      // If ends with '/' then add directory
-      if FileName[Length(FileName)] = PathDelim then
-      begin
-        //Asar.AddDir(AsarPath);
-      end
-      else
-      begin
-        DiskPath:= SrcPathU + CeUtf16ToUtf8(FileName);
-{
-        Ext:= ExtractFileExt(DiskPath);
-        Unpacked:= MatchStr(Ext.ToLower, UnpackedExts);
+        // If ends with '/' then add directory
+        if FileName[Length(FileName)] = PathDelim then
+        begin
+          Asar.AddDir(AsarPath);
+        end
+        else
+        begin
+          DiskPath:= SrcPathU + CeUtf16ToUtf8(FileName);
+
+//        Ext:= ExtractFileExt(DiskPath);
+//        Unpacked:= MatchStr(Ext.ToLower, UnpackedExts);
 {$IFDEF UNIX}
-        Executable:= (fpAccess(DiskPath, X_OK) = 0);
+          Executable:= (fpAccess(DiskPath, X_OK) = 0);
 {$ENDIF}
-        Asar.AddFile(DiskPath, AsarPath, Unpacked, Executable);
-}
-        Asar.AddFile(DiskPath, AsarPath);
-      end;
+          Asar.AddFile(DiskPath, AsarPath, Unpacked, Executable);
 
-      Inc(AddList, Length(FileName) + 1);
+//        Asar.AddFile(DiskPath, AsarPath);
+        end;
+
+        Inc(AddList, Length(FileName) + 1);
+      end;
+      //Asar.Sort;
+      Result:= Asar.SaveTo(AFileName);
+    finally
+      Asar.Free;
     end;
-  finally
-    Result:= Asar.SaveTo(AFileName);
-    Asar.Close;
-    Asar.Free;
+  except
+    Result:= E_EWRITE;
   end;
 end;
 
@@ -229,26 +236,29 @@ var
 begin
   Result:= E_SUCCESS;
   AFileName:= CeUtf16ToUtf8(UnicodeString(PackedFile));
-  Asar:= TAsarArchive.Create;
   try
-    if not Asar.Open(AFileName) then
-    begin
-      Result:= E_EOPEN;
-      raise Exception.Create(EmptyStr);
-    end;
-    Asar.ProcessDataProc:= gProcessDataProcW;
+    Asar:= TAsarArchive.Create;
+    try
+      if not Asar.Open(AFileName) then
+      begin
+        Asar.Free;
+        Exit(E_EOPEN);
+      end;
+      Asar.ProcessDataProc:= gProcessDataProcW;
+      Asar.CloseAfterSave:= True;
 
-    while DeleteList^ <> #0 do
-    begin
-      FileName:= UnicodeString(DeleteList);
-      Asar.RemoveFile(CeUtf16ToUtf8(FileName));
-      Inc(DeleteList, Length(FileName) + 1);
+      while DeleteList^ <> #0 do
+      begin
+        FileName:= UnicodeString(DeleteList);
+        Asar.RemoveFile(CeUtf16ToUtf8(FileName));
+        Inc(DeleteList, Length(FileName) + 1);
+      end;
+      Result:= Asar.SaveTo(AFileName);
+    finally
+      Asar.Free;
     end;
-
-  finally
-    Result:= Asar.SaveTo(AFileName);
-    Asar.Close;
-    Asar.Free;
+  except
+    Result:= E_EWRITE;
   end;
 end;
 
